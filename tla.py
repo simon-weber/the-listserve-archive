@@ -1,12 +1,13 @@
 import os
 
-from flask import Flask
+from flask import Flask, request
 import requests
 
 ENV_KEYS = ('GH_USER', 'GH_SECRET', 'CIO_KEY', 'CIO_SECRET')
 
 app = Flask(__name__)
 app.config['GH_ROOT'] = 'https://api.github.com/'
+app.debug=True
 
 def load_env_conf(keys=ENV_KEYS):
     """A hack, since I'm using Heroku env files + foreman."""
@@ -20,7 +21,7 @@ load_env_conf()
 def tlpost():
     """POSTed to by context.IO when a new post is received."""
     app.logger.debug("received new post")
-    app.logger.debug(request)
+    app.logger.debug(request.form)
     app.logger.debug(request.json)
 
     return "ok"
@@ -32,7 +33,7 @@ def tlpost():
 def mailfailure():
     """GET by context.IO if the WebHook fails and will no longer be active."""
     app.logger.error("context.IO reports WebHook failure!")
-    app.logger.debug(request)
+    app.logger.debug(request.form)
     app.logger.debug(request.json)
 
     #apparently, cIO will email me when this fails; might not even need this
