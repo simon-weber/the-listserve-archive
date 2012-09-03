@@ -23,6 +23,8 @@ def tlpost():
     app.logger.debug(request)
     app.logger.debug(request.json)
 
+    return "ok"
+
     #TODO convert to html
     #then create_gh_commit(...)
 
@@ -32,7 +34,10 @@ def mailfailure():
     app.logger.error("context.IO reports WebHook failure!")
     app.logger.debug(request)
     app.logger.debug(request.json)
-    #TODO need to notify about this
+
+    #apparently, cIO will email me when this fails; might not even need this
+
+    return "ok"
 
 
 def create_gh_commit(user, passwd, repo, 
