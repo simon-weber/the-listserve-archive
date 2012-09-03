@@ -4,3 +4,4 @@ Werkzeug==0.8.3
 distribute==0.6.27
 requests==0.14.0
 wsgiref==0.1.2
+git+git://github.com/contextio/Python-ContextIO.git
