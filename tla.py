@@ -3,15 +3,18 @@ import os
 from flask import Flask
 import requests
 
-
-GH_ROOT = 'https://api.github.com/'
-GH_USER = os.environ['GITHUB_USER']
-GH_SECRET = os.environ['GITHUB_SECRET']
-CIO_KEY = os.environ['CIO_KEY']
-CIO_SECRET = os.environ['CIO_SECRET']
+ENV_KEYS = ('GITHUB_USER', 'GITHUB_SECRET', 'CIO_KEY', 'CIO_SECRET')
 
 app = Flask(__name__)
+app.config['GITHUB_ROOT'] = 'https://api.github.com/'
 
+def load_env_conf(keys=ENV_KEYS):
+    """A hack, since I'm using Heroku env files + foreman."""
+    global app
+    for key in keys:
+        app.config[key] = os.environ[key]
+
+load_env_conf()
 
 @app.route('/tlpost', methods=['POST'])
 def tlpost():
@@ -26,6 +29,7 @@ def mailfailure():
     app.logger.error("context.IO reports WebHook failure!")
     #TODO need to notify about this
 
+
 def create_gh_commit(user, passwd, repo, 
         filepath, contents, commit_message, 
         executable=False, force=False):
@@ -37,6 +41,8 @@ def create_gh_commit(user, passwd, repo,
     #as a reference here. Neither were totally correct.
 
     app.loggger.debug("will commit %s",filepath)
+
+    GH_ROOT = app.config['GITHUB_ROOT']
 
     sha_latest_commit = requests.get(GH_ROOT+"repos/{user}/{repo}/git/refs/heads/master".format(
         user=user,
