@@ -20,13 +20,18 @@ load_env_conf()
 def tlpost():
     """POSTed to by context.IO when a new post is received."""
     app.logger.debug("received new post")
+    app.logger.debug(request)
+    app.logger.debug(request.json)
+
     #TODO convert to html
-    #create_gh_commit(...)
+    #then create_gh_commit(...)
 
 @app.route('/mailfailure')
 def mailfailure():
     """GET by context.IO if the WebHook fails and will no longer be active."""
     app.logger.error("context.IO reports WebHook failure!")
+    app.logger.debug(request)
+    app.logger.debug(request.json)
     #TODO need to notify about this
 
 
