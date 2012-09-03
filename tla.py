@@ -3,10 +3,10 @@ import os
 from flask import Flask
 import requests
 
-ENV_KEYS = ('GITHUB_USER', 'GITHUB_SECRET', 'CIO_KEY', 'CIO_SECRET')
+ENV_KEYS = ('GH_USER', 'GH_SECRET', 'CIO_KEY', 'CIO_SECRET')
 
 app = Flask(__name__)
-app.config['GITHUB_ROOT'] = 'https://api.github.com/'
+app.config['GH_ROOT'] = 'https://api.github.com/'
 
 def load_env_conf(keys=ENV_KEYS):
     """A hack, since I'm using Heroku env files + foreman."""
@@ -42,7 +42,7 @@ def create_gh_commit(user, passwd, repo,
 
     app.loggger.debug("will commit %s",filepath)
 
-    GH_ROOT = app.config['GITHUB_ROOT']
+    GH_ROOT = app.config['GH_ROOT']
 
     sha_latest_commit = requests.get(GH_ROOT+"repos/{user}/{repo}/git/refs/heads/master".format(
         user=user,

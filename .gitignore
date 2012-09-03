@@ -26,7 +26,6 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 
-tla-venv
-.env
-*_env
+.env*
+venv*
 _site
