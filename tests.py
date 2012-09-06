@@ -1,9 +1,10 @@
-import os
+from datetime import datetime
 import unittest
-import tempfile
 import sys
 
 import tla
+from test_data import cio_email
+
 
 class TlaTest(unittest.TestCase):
 
@@ -22,16 +23,35 @@ class TlaTest(unittest.TestCase):
         suite.addTests(c() for c in cls.__subclasses__())
         return suite
 
+
 class SmallTest(TlaTest):
     """Offline, fast test with no external dependencies."""
-    pass
+
+    def test_post_conversion(self):
+        post = tla.Post.from_cio_message(cio_email)
+
+        for key in range(3):
+            self.assertEqual(str, type(post[key]), str(key))
+
+        self.assertEqual('subject', post.subject)
+        self.assertEqual('author', post.author)
+        self.assertEqual('body', post.body)
+        self.assertEqual(datetime.fromtimestamp(0), post.date)
+
+        for key in range(4, 6):
+            self.assertEqual(unicode, type(post[key]), str(key))
+
+        self.assertEqual(u'body', post.raw_body)
+        self.assertEqual(u'utf-8', post.raw_charset)
+
 
 class BigTest(TlaTest):
     """Possibly online, slow test. Might mutate external resources."""
     pass
 
 
-small_tests, big_tests = SmallTest.create_suite(), BigTest.create_suite()
+small_tests, big_tests = (unittest.defaultTestLoader.loadTestsFromTestCase(k)
+                          for k in (SmallTest, BigTest))
 
 if __name__ == '__main__':
     to_run = small_tests

@@ -17,12 +17,6 @@ app = Flask(__name__)
 app.config['GH_ROOT'] = 'https://api.github.com/'
 app.debug = True
 
-#Set up cIO session.
-oauth_hook = OAuth1Hook(
-    consumer_key=app.config['CIO_KEY'],
-    consumer_secret=app.config['CIO_SECRET'])
-cio_requests = requests.session(hooks={'pre_request': oauth_hook})
-
 
 def load_env_conf(keys=ENV_KEYS):
     """A hack, since I'm using Heroku env files + foreman."""
@@ -31,6 +25,13 @@ def load_env_conf(keys=ENV_KEYS):
         app.config[key] = os.environ[key]
 
 load_env_conf()
+
+
+#Set up cIO session.
+oauth_hook = OAuth1Hook(
+    consumer_key=app.config['CIO_KEY'],
+    consumer_secret=app.config['CIO_SECRET'])
+cio_requests = requests.session(hooks={'pre_request': oauth_hook})
 
 
 @app.route('/tlpost', methods=['POST'])
@@ -80,20 +81,20 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date',
 
     @staticmethod
     def from_cio_message(message):
-        subject = message['subject']
+        subject = message['subject'].encode()
 
-        m_from = message['from']
-        author = m_from['name'] if 'name' in m_from else 'Anonymous'
+        m_from = message['addresses']['from']
+        author = m_from['name'].encode() if 'name' in m_from else 'Anonymous'
 
         m_body = message['body'][0]   # Listserve always sends 1 plaintext body
         raw_body = m_body['content']
         raw_charset = m_body['charset']
 
         try:
-            body = raw_body.decode(raw_charset)
+            body = raw_body.encode(raw_charset)
         except UnicodeError:
             guess_enc = chardet.detect(body)['encoding']
-            body = raw_body.decode(guess_enc, errors='replace')
+            body = raw_body.encode(guess_enc, errors='replace')
 
         date = datetime.fromtimestamp(message['date'])
 
