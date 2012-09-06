@@ -1,5 +1,8 @@
+from base64 import b64encode
 from collections import namedtuple
 from datetime import datetime
+import hmac
+import hashlib
 import os
 import json
 from threading import Lock
@@ -34,8 +37,8 @@ oauth_hook = OAuth1Hook(
 cio_requests = requests.session(hooks={'pre_request': oauth_hook})
 
 
-@app.route('/tlpost', methods=['POST'])
-def tlpost():
+@app.route('/cio/webhook', methods=['POST'])
+def receive_mail():
     """POSTed to by context.IO when a new post is received."""
     app.logger.debug("received new post")
     app.logger.debug(request.form)
@@ -55,8 +58,8 @@ def tlpost():
     #then create_gh_commit(...)
 
 
-@app.route('/mailfailure')
-def mailfailure():
+@app.route('/cio/webhookfailure')
+def handle_webhook_failure():
     """GET by context.IO if the WebHook fails and will no longer be active."""
     app.logger.error("context.IO reports WebHook failure!")
     app.logger.debug(request.form)
@@ -65,6 +68,18 @@ def mailfailure():
     #need to notify; cIO only notifies on the first failure
 
     return "ok"
+
+
+def verify_webhook_post(request_json):
+    """Return True if the request is from context.IO.
+
+    http://context.io/docs/2.0/accounts/webhooks."""
+
+    sig = hmac.new(app.config['CIO_SECRET'],
+             msg=str(request_json['timestamp']) + request_json['token'],
+             digestmod=hashlib.sha256).hexdigest()
+
+    return sig == request_json['signature']
 
 
 class Post(namedtuple('Post', ['subject', 'author', 'body', 'date',

@@ -1,9 +1,10 @@
+from copy import copy
 from datetime import datetime
 import unittest
 import sys
 
 import tla
-from test_data import cio_email
+from test_data import cio_email, cio_webhook_post
 
 
 class TlaTest(unittest.TestCase):
@@ -43,6 +44,14 @@ class SmallTest(TlaTest):
 
         self.assertEqual(u'body', post.raw_body)
         self.assertEqual(u'utf-8', post.raw_charset)
+
+    def test_webhook_positive_verification(self):
+        self.assertTrue(tla.verify_webhook_post(cio_webhook_post))
+
+    def test_webhook_negative_verification(self):
+        bad_post = copy(cio_webhook_post)
+        bad_post['signature'] = 'bogus'
+        self.assertTrue(not tla.verify_webhook_post(bad_post))
 
 
 class BigTest(TlaTest):
