@@ -60,7 +60,19 @@ class BigTests(TlaTest):
                   repo='the-listserve-archive',
                   filepath=new_file,
                   contents='new file contents',
-                  commit_message='test commit',
+                  commit_message='new commit',
+                  branch='testing')
+
+    def test_commit_update_file(self):
+        gh = Github()
+
+        #On failure, raise a GithubException
+        gh.commit(user=tla.app.config['GH_USER'],
+                  passwd=tla.app.config['GH_SECRET'],
+                  repo='the-listserve-archive',
+                  filepath='README',
+                  contents='Orphan branch used for GitHub api testing.',
+                  commit_message='update commit',
                   branch='testing')
 
 
