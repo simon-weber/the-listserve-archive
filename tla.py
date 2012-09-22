@@ -1,6 +1,3 @@
-from base64 import b64encode
-from collections import namedtuple
-from datetime import datetime
 import hmac
 import hashlib
 import os
@@ -10,7 +7,6 @@ from threading import Lock
 from flask import Flask, request
 from rauth.hook import OAuth1Hook
 import requests
-import chardet
 
 
 ENV_KEYS = ('GH_USER', 'GH_SECRET', 'CIO_KEY', 'CIO_SECRET')
@@ -44,8 +40,11 @@ def receive_mail():
     app.logger.debug(request.form)
     app.logger.debug(request.json)
 
-    account_id = request.json['account_id']
-    message_id = request.json['message_id']
+    if not verify_webhook_post(request.json):
+        return "invalid"
+
+    # account_id = request.json['account_id']
+    # message_id = request.json['message_id']
 
     #trade those for a message
     #build a Post
@@ -65,7 +64,7 @@ def handle_webhook_failure():
     app.logger.debug(request.form)
     app.logger.debug(request.json)
 
-    #need to notify; cIO only notifies on the first failure
+    #TODO need to notify; cIO only notifies on the first failure
 
     return "ok"
 
@@ -80,40 +79,6 @@ def verify_webhook_post(request_json):
              digestmod=hashlib.sha256).hexdigest()
 
     return sig == request_json['signature']
-
-
-class Post(namedtuple('Post', ['subject', 'author', 'body', 'date',
-                               'raw_body', 'raw_charset'])):
-    """Represents a single Listserve email post.
-
-    It stores raw body and charset information so decoding issues can be fixed
-    retroactively.
-
-    date:   a datetime object
-    raw_*:  unicode
-    others: bytestrings
-    """
-
-    @staticmethod
-    def from_cio_message(message):
-        subject = message['subject'].encode()
-
-        m_from = message['addresses']['from']
-        author = m_from['name'].encode() if 'name' in m_from else 'Anonymous'
-
-        m_body = message['body'][0]   # Listserve always sends 1 plaintext body
-        raw_body = m_body['content']
-        raw_charset = m_body['charset']
-
-        try:
-            body = raw_body.encode(raw_charset)
-        except UnicodeError:
-            guess_enc = chardet.detect(body)['encoding']
-            body = raw_body.encode(guess_enc, errors='replace')
-
-        date = datetime.fromtimestamp(message['date'])
-
-        return Post(subject, author, body, date, raw_body, raw_charset)
 
 
 def create_gh_commit(user, passwd, repo,
