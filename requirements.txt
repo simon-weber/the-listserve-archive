@@ -6,3 +6,4 @@ requests==0.14.0
 wsgiref==0.1.2
 rauth==0.4.15
 git+git://github.com/contextio/Python-ContextIO.git
+decorator==3.3.3

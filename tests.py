@@ -1,10 +1,12 @@
 from copy import copy
 import json
 import unittest
+import time
 import sys
 
 import tla
 from models import Post
+from github import Github
 from test_data import cio_email, cio_webhook_post
 
 
@@ -47,16 +49,34 @@ class SmallTests(TlaTest):
 
 class BigTests(TlaTest):
     """Possibly online, slow test. Might mutate external resources."""
-    pass
+
+    def test_commit_new_file(self):
+        gh = Github()
+        new_file = "file-%s" % time.time()
+
+        #On failure, raise a GithubException
+        gh.commit(user=tla.app.config['GH_USER'],
+                  passwd=tla.app.config['GH_SECRET'],
+                  repo='the-listserve-archive',
+                  filepath=new_file,
+                  contents='new file contents',
+                  commit_message='test commit',
+                  branch='testing')
 
 
 small_tests, big_tests = (unittest.defaultTestLoader.loadTestsFromTestCase(k)
                           for k in (SmallTests, BigTests))
+all_tests = unittest.TestSuite.addTests(*(small_tests, big_tests))
 
 if __name__ == '__main__':
     to_run = small_tests
 
-    if len(sys.argv) > 1 and sys.argv[1] == 'big':
-        to_run = big_tests
+    if len(sys.argv) > 1:
+        if sys.argv[1] == 'all':
+            to_run = all_tests
+        elif sys.argv[1] == 'big':
+            to_run = big_tests
+        else:
+            print 'bad argument; not running tests'
 
     unittest.TextTestRunner().run(to_run)
