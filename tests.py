@@ -29,7 +29,8 @@ class SmallTests(TlaTest):
 
         self.assertEqual('subject', post.subject)
         self.assertEqual('author', post.author)
-        self.assertEqual('body', post.body)
+        self.assertEqual('body\n\n--\n\nunsubscribe'.split(),
+                         post.body.split())
         self.assertEqual(0, post.date)
 
     def test_post_json_serialize(self):
@@ -45,6 +46,12 @@ class SmallTests(TlaTest):
         bad_post = copy(cio_webhook_post)
         bad_post['signature'] = 'bogus'
         self.assertTrue(not tla.verify_webhook_post(bad_post))
+
+    def test_post_jekyll_conversion(self):
+        post = Post.from_cio_message(cio_email)
+
+        fn, content = post.to_jekyll_post()
+        #TODO verify better
 
 
 class BigTests(TlaTest):
@@ -78,7 +85,7 @@ class BigTests(TlaTest):
 
 small_tests, big_tests = (unittest.defaultTestLoader.loadTestsFromTestCase(k)
                           for k in (SmallTests, BigTests))
-all_tests = unittest.TestSuite.addTests(*(small_tests, big_tests))
+all_tests = unittest.TestSuite((small_tests, big_tests))
 
 if __name__ == '__main__':
     to_run = small_tests
@@ -86,9 +93,14 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         if sys.argv[1] == 'all':
             to_run = all_tests
+            print 'Running all tests:'
         elif sys.argv[1] == 'big':
             to_run = big_tests
+            print 'Running big tests:'
         else:
             print 'bad argument; not running tests'
+            exit(-1)
+    else:
+        print 'Running small tests:'
 
     unittest.TextTestRunner().run(to_run)
