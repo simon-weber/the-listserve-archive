@@ -1,4 +1,5 @@
 from copy import copy
+import json
 import unittest
 import sys
 
@@ -28,6 +29,12 @@ class SmallTests(TlaTest):
         self.assertEqual('author', post.author)
         self.assertEqual('body', post.body)
         self.assertEqual(0, post.date)
+
+    def test_post_json_serialize(self):
+        post = Post.from_cio_message(cio_email)
+
+        json_post = json.dumps(post)
+        self.assertEqual(post, Post(*json.loads(json_post)))
 
     def test_webhook_positive_verification(self):
         self.assertTrue(tla.verify_webhook_post(cio_webhook_post))
