@@ -2,7 +2,9 @@ import hmac
 import hashlib
 import os
 
+from github import Github
 from flask import Flask, request
+from models import Post
 from rauth.hook import OAuth1Hook
 import requests
 
@@ -39,18 +41,9 @@ def receive_mail():
     if not verify_webhook_post(request.json):
         return "invalid"
 
-    # account_id = request.json['account_id']
-    # message_id = request.json['message_id']
-
-    #trade those for a message
-    #build a Post
-    #convert Post to html
-    #commit with the right filename
+    commit_new_post(request.json)
 
     return "ok"
-
-    #TODO convert to html
-    #then create_gh_commit(...)
 
 
 @app.route('/cio/webhookfailure')
@@ -71,10 +64,40 @@ def verify_webhook_post(request_json):
     http://context.io/docs/2.0/accounts/webhooks."""
 
     sig = hmac.new(app.config['CIO_SECRET'],
-             msg=str(request_json['timestamp']) + request_json['token'],
-             digestmod=hashlib.sha256).hexdigest()
+                   msg=str(request_json['timestamp']) + request_json['token'],
+                   digestmod=hashlib.sha256).hexdigest()
 
     return sig == request_json['signature']
+
+
+def commit_new_post(webhook_request_json, branch='master'):
+    """Create a proper jekyll file in the Github repo."""
+
+    webhook = webhook_request_json  # convenience
+
+    account_id = webhook['account_id']
+    msg_id = webhook['message_data']['message_id']
+
+    msg = cio_requests.get(
+        "https://api.context.io/2.0/accounts/{aid}/messages/{mid}".format(
+            aid=account_id,
+            mid=msg_id),
+        params={'include_body': 1,
+                'body_type': 'text/plain'}
+    )
+
+    post = Post.from_cio_message(msg.json)
+
+    fn, content = post.to_jekyll_post()
+
+    Github().commit(
+        user=app.config['GH_USER'],
+        passwd=app.config['GH_SECRET'],
+        repo='the-listserve-archive',
+        filepath='_posts/' + fn,
+        content=content,
+        commit_message='add post',
+        branch=branch)
 
 
 if __name__ == '__main__':

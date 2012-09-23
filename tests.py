@@ -92,6 +92,9 @@ class HugeTests(TlaTest):
                   commit_message='update commit',
                   branch='testing')
 
+    def test_commit_new_post(self):
+        tla.commit_new_post(cio_webhook_post, branch='testing')
+
 
 if __name__ == '__main__':
     arg_to_tests = dict(
