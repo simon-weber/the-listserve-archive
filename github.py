@@ -1,3 +1,4 @@
+import base64
 import json
 import requests
 from threading import Lock
@@ -108,10 +109,7 @@ class Github:
     @_atomic
     def get_file(self, user, repo,
                  filepath, branch='master'):
-        """Returns a tuple (encoding, content).
-
-        _encoding_ is either 'utf-8' or 'base64'.
-        _content_ is a unicode string."""
+        """Returns a unicode string of the file contents."""
 
         sha_latest_commit = Github._verify(requests.get(
             self._API + "repos/{user}/{repo}/git/refs/heads/{branch}".format(
@@ -145,4 +143,7 @@ class Github:
 
         blob = Github._verify(requests.get(blob_found[0]['url'])).json
 
-        return blob['encoding'], blob['content']
+        if blob['encoding'] == 'base64':
+            return base64.b64decode(blob['content'])
+        else:
+            return blob['content']

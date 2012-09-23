@@ -57,13 +57,12 @@ class SmallTests(TlaTest):
 class BigTests(TlaTest):
     """Possibly online, slow test. Will not mutate external resources."""
     def test_get_gh_readme(self):
-        encoding, content = Github().get_file(
+        content = Github().get_file(
             user=tla.app.config['GH_USER'],
             repo='the-listserve-archive',
             filepath='README',
             branch='testing')
 
-        self.assertTrue('utf-8', encoding)
         self.assertTrue('Orphan branch used for GitHub api testing.', content)
 
 
