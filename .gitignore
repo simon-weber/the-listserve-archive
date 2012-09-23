@@ -28,4 +28,4 @@ pip-log.txt
 
 .env*
 venv*
-_site
+sample.py

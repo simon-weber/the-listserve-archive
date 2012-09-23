@@ -9,18 +9,18 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
     subject, author, and body are unicode strings.
     date is an integer unix timestamp.
 
-    A Post is json serializable.
+    Posts are json-serializable.
     """
 
     def to_jekyll_post(self):
-        """Return a a Jekyll post as a tuple (filename, contents)."""
+        """Return a Jekyll post as a tuple (filename, contents)."""
 
         date = datetime.fromtimestamp(self.date)
 
         #Cut out Listserve subject header.
         title = self.subject.replace('[The Listserve]', '').strip()
 
-        desc = 'A post from The Listserve'  # expand on later
+        desc = 'A post from The Listserve'  # TODO do something interesting
 
         #Construct relevant date strings.
         date_str = date.strftime("%B %d %Y")
@@ -32,9 +32,12 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
 
         #Remove unsubscribe text.
         post_text = self.body[:self.body.rfind('--')]
+
         #Find paragraphs. This includes extra whitespace, atm.
-        paras = post_text.split(u'\r\n\r\n')
-        paras = [para.replace('\n', '<br />') for para in paras]
+        post_text = post_text.replace('\r', '')
+        paras = post_text.split(u'\n\n')
+        paras = [para.replace('\n', '<br />') for para in paras if para]
+
         #Build html paragraphs.
         post_text = '\n'.join(
             ["<p>%s</p>" % para.encode('ascii', 'xmlcharrefreplace')

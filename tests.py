@@ -24,12 +24,12 @@ class TlaTest(unittest.TestCase):
 class SmallTests(TlaTest):
     """Offline, fast test with no external dependencies."""
 
-    def test_post_conversion(self):
+    def test_post_from_cio(self):
         post = Post.from_cio_message(cio_email)
 
         self.assertEqual('subject', post.subject)
         self.assertEqual('author', post.author)
-        self.assertEqual('body\n\n--\n\nunsubscribe'.split(),
+        self.assertEqual('p1a\np1b\n\np2a\n\n--\n\nunsubscribe'.split(),
                          post.body.split())
         self.assertEqual(0, post.date)
 
@@ -50,8 +50,8 @@ class SmallTests(TlaTest):
     def test_post_jekyll_conversion(self):
         post = Post.from_cio_message(cio_email)
 
+        #TODO unsure how to properly verify this
         fn, content = post.to_jekyll_post()
-        #TODO verify
 
 
 class BigTests(TlaTest):
@@ -92,15 +92,15 @@ class HugeTests(TlaTest):
                   commit_message='update commit',
                   branch='testing')
 
-arg_to_tests = dict(
-    zip(('small', 'big', 'huge'),
-        [unittest.defaultTestLoader.loadTestsFromTestCase(tests)
-         for tests in (SmallTests, BigTests, HugeTests)]
-       )
-)
-arg_to_tests['all'] = unittest.TestSuite(arg_to_tests.values())
 
 if __name__ == '__main__':
+    arg_to_tests = dict(
+        zip(('small', 'big', 'huge'),
+            [unittest.defaultTestLoader.loadTestsFromTestCase(tests)
+             for tests in (SmallTests, BigTests, HugeTests)]
+           ))
+    arg_to_tests['all'] = unittest.TestSuite(arg_to_tests.values())
+
     to_run = arg_to_tests['small']
 
     if len(sys.argv) > 1:

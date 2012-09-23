@@ -68,11 +68,7 @@ cio_email = {
         {
            u"body_section": 1, 
             u"charset":u"utf-8", 
-            u"content":u"""body            
-            
-            --
-            
-            unsubscribe""", 
+            u"content":u"p1a\r\np1b\r\n\r\np2a\r\n\r\n--\r\n\r\nunsubscribe",
            u"format":u"fixed", 
            u"type":u"text/plain"
         }
