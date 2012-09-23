@@ -1,5 +1,6 @@
 import hmac
 import hashlib
+import json
 import os
 
 from github import Github
@@ -41,7 +42,7 @@ def receive_mail():
     if not verify_webhook_post(request.json):
         return "invalid"
 
-    commit_new_post(request.json)
+    commit_post_data(request.json)
 
     return "ok"
 
@@ -70,8 +71,9 @@ def verify_webhook_post(request_json):
     return sig == request_json['signature']
 
 
-def commit_new_post(webhook_request_json, branch='gh-pages'):
-    """Create a proper jekyll file in the Github repo."""
+def commit_post_data(webhook_request_json, branch='gh-pages'):
+    """Commit a .html file in _posts/, a .json in data/, and append to the
+    cumulative .json in data/."""
 
     webhook = webhook_request_json  # convenience
 
@@ -88,15 +90,44 @@ def commit_new_post(webhook_request_json, branch='gh-pages'):
 
     post = Post.from_cio_message(msg.json)
 
-    fn, content = post.to_jekyll_post()
+    html_fn, jekyll_html = post.to_jekyll_post()
+    Github().commit(
+        user=app.config['GH_USER'],
+        passwd=app.config['GH_SECRET'],
+        repo='the-listserve-archive',
+        filepath='_posts/' + html_fn,
+        content=jekyll_html,
+        commit_message='add post html',
+        branch=branch)
 
     Github().commit(
         user=app.config['GH_USER'],
         passwd=app.config['GH_SECRET'],
         repo='the-listserve-archive',
-        filepath='_posts/' + fn,
-        content=content,
-        commit_message='add post',
+        filepath="data/{tstamp}.json".format(tstamp=post.date),
+        content=json.dumps(post),
+        commit_message='add post html',
+        branch=branch)
+
+    #TODO might need to make this constant, not linear on posts.
+    all_posts = json.loads(
+        Github().get_file(
+            user=app.config['GH_USER'],
+            passwd=app.config['GH_SECRET'],
+            repo='the-listserve-archive',
+            filepath='data/all_posts.json',
+            commit_message='add post json',
+            branch=branch))
+
+    all_posts[post.date] = post
+
+    Github().commit(
+        user=app.config['GH_USER'],
+        passwd=app.config['GH_SECRET'],
+        repo='the-listserve-archive',
+        filepath='data/all_posts.json',
+        content=json.dumps(all_posts),
+        commit_message='add post to cumulative collection',
         branch=branch)
 
 

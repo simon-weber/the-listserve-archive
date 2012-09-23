@@ -73,7 +73,6 @@ class HugeTests(TlaTest):
     def test_commit_new_file(self):
         new_file = "file-%s" % time.time()
 
-        #On failure, raise a GithubException
         Github().commit(user=tla.app.config['GH_USER'],
                   passwd=tla.app.config['GH_SECRET'],
                   repo='the-listserve-archive',
@@ -83,7 +82,6 @@ class HugeTests(TlaTest):
                   branch='testing')
 
     def test_commit_update_file(self):
-        #On failure, raise a GithubException
         Github().commit(user=tla.app.config['GH_USER'],
                   passwd=tla.app.config['GH_SECRET'],
                   repo='the-listserve-archive',
@@ -92,8 +90,8 @@ class HugeTests(TlaTest):
                   commit_message='update commit',
                   branch='testing')
 
-    def test_commit_new_post(self):
-        tla.commit_new_post(cio_webhook_post, branch='testing')
+    def test_commit_post_data(self):
+        tla.commit_post_data(cio_webhook_post, branch='testing')
 
 
 if __name__ == '__main__':

@@ -12,6 +12,8 @@ class GithubException(Exception):
 
 
 class Github:
+    #TODO switch to pygithub to clean this up.
+    #Also make sure to use the same instance so that _atomic works.
 
     @staticmethod
     def _verify(res):
