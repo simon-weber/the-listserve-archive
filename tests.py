@@ -51,39 +51,45 @@ class SmallTests(TlaTest):
         post = Post.from_cio_message(cio_email)
 
         fn, content = post.to_jekyll_post()
-        #TODO verify better
+        #TODO verify
 
 
 class BigTests(TlaTest):
     """Possibly online, slow test. Will not mutate external resources."""
-    pass
+    def test_get_gh_readme(self):
+        encoding, content = Github().get_file(
+            user=tla.app.config['GH_USER'],
+            repo='the-listserve-archive',
+            filepath='README',
+            branch='testing')
+
+        self.assertTrue('utf-8', encoding)
+        self.assertTrue('Orphan branch used for GitHub api testing.', content)
 
 
 class HugeTests(TlaTest):
     """Possibly online, slow test. Might mutate external resources."""
 
+    #TODO verify these by getting the file
     def test_commit_new_file(self):
-        gh = Github()
         new_file = "file-%s" % time.time()
 
         #On failure, raise a GithubException
-        gh.commit(user=tla.app.config['GH_USER'],
+        Github().commit(user=tla.app.config['GH_USER'],
                   passwd=tla.app.config['GH_SECRET'],
                   repo='the-listserve-archive',
                   filepath=new_file,
-                  contents='new file contents',
+                  content='new file contents',
                   commit_message='new commit',
                   branch='testing')
 
     def test_commit_update_file(self):
-        gh = Github()
-
         #On failure, raise a GithubException
-        gh.commit(user=tla.app.config['GH_USER'],
+        Github().commit(user=tla.app.config['GH_USER'],
                   passwd=tla.app.config['GH_SECRET'],
                   repo='the-listserve-archive',
                   filepath='README',
-                  contents='Orphan branch used for GitHub api testing.',
+                  content='Orphan branch used for GitHub api testing.',
                   commit_message='update commit',
                   branch='testing')
 

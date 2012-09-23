@@ -22,7 +22,7 @@ class Github:
         return res
 
     def __init__(self, api_url='https://api.github.com/'):
-        self.API = api_url
+        self._API = api_url
         self._mutex = Lock()
 
     @decorator
@@ -35,7 +35,7 @@ class Github:
 
     @_atomic
     def commit(self, user, passwd, repo,
-               filepath, contents, commit_message,
+               filepath, content, commit_message,
                branch='master',
                executable=False, force=False):
         """Make a commit on GitHub.
@@ -47,21 +47,21 @@ class Github:
         See http://developer.github.com/v3/git/"""
 
         sha_latest_commit = Github._verify(requests.get(
-            self.API + "repos/{user}/{repo}/git/refs/heads/{branch}".format(
+            self._API + "repos/{user}/{repo}/git/refs/heads/{branch}".format(
                 branch=branch,
                 user=user,
                 repo=repo)
         )).json['object']['sha']
 
         sha_base_tree = Github._verify(requests.get(
-            self.API + "repos/{user}/{repo}/git/commits/{sha}".format(
+            self._API + "repos/{user}/{repo}/git/commits/{sha}".format(
                 user=user,
                 repo=repo,
                 sha=sha_latest_commit)
         )).json['tree']['sha']
 
         sha_new_tree = Github._verify(requests.post(
-            self.API + "repos/{user}/{repo}/git/trees".format(
+            self._API + "repos/{user}/{repo}/git/trees".format(
                 user=user,
                 repo=repo
             ),
@@ -73,14 +73,14 @@ class Github:
                         'path': filepath,
                         'mode': '100755' if executable else '100644',
                         'type': 'blob',
-                        'content': contents
+                        'content': content
                     }
                 ],
             })
         )).json['sha']
 
         sha_new_commit = Github._verify(requests.post(
-            self.API + "repos/{user}/{repo}/git/commits".format(
+            self._API + "repos/{user}/{repo}/git/commits".format(
                 user=user,
                 repo=repo
             ),
@@ -93,7 +93,7 @@ class Github:
         )).json['sha']
 
         Github._verify(requests.patch(
-            self.API + "repos/{user}/{repo}/git/refs/heads/{branch}".format(
+            self._API + "repos/{user}/{repo}/git/refs/heads/{branch}".format(
                 branch=branch,
                 user=user,
                 repo=repo
@@ -104,3 +104,45 @@ class Github:
                 'force': force
             }))
         )
+
+    @_atomic
+    def get_file(self, user, repo,
+                 filepath, branch='master'):
+        """Returns a tuple (encoding, content).
+
+        _encoding_ is either 'utf-8' or 'base64'.
+        _content_ is a unicode string."""
+
+        sha_latest_commit = Github._verify(requests.get(
+            self._API + "repos/{user}/{repo}/git/refs/heads/{branch}".format(
+                user=user,
+                repo=repo,
+                branch=branch)
+        )).json['object']['sha']
+
+        sha_base_tree = Github._verify(requests.get(
+            self._API + "repos/{user}/{repo}/git/commits/{sha}".format(
+                user=user,
+                repo=repo,
+                sha=sha_latest_commit)
+        )).json['tree']['sha']
+
+        tree = Github._verify(
+            requests.get(
+                self._API +
+                "repos/{user}/{repo}/git/trees/{sha}?recursive=1".format(
+                    user=user,
+                    repo=repo,
+                    sha=sha_base_tree)
+            )).json['tree']
+
+        blob_found = [blob for blob in tree
+                      if blob['type'] == 'blob' and
+                      blob['path'] == filepath]
+
+        if not blob_found:
+            raise GithubException('File not found in repo.')
+
+        blob = Github._verify(requests.get(blob_found[0]['url'])).json
+
+        return blob['encoding'], blob['content']
