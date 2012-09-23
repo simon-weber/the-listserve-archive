@@ -70,7 +70,7 @@ def verify_webhook_post(request_json):
     return sig == request_json['signature']
 
 
-def commit_new_post(webhook_request_json, branch='master'):
+def commit_new_post(webhook_request_json, branch='gh-pages'):
     """Create a proper jekyll file in the Github repo."""
 
     webhook = webhook_request_json  # convenience
