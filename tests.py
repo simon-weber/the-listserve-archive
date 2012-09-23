@@ -55,6 +55,11 @@ class SmallTests(TlaTest):
 
 
 class BigTests(TlaTest):
+    """Possibly online, slow test. Will not mutate external resources."""
+    pass
+
+
+class HugeTests(TlaTest):
     """Possibly online, slow test. Might mutate external resources."""
 
     def test_commit_new_file(self):
@@ -82,25 +87,21 @@ class BigTests(TlaTest):
                   commit_message='update commit',
                   branch='testing')
 
-
-small_tests, big_tests = (unittest.defaultTestLoader.loadTestsFromTestCase(k)
-                          for k in (SmallTests, BigTests))
-all_tests = unittest.TestSuite((small_tests, big_tests))
+arg_to_tests = dict(
+    zip(('small', 'big', 'huge'),
+        [unittest.defaultTestLoader.loadTestsFromTestCase(tests)
+         for tests in (SmallTests, BigTests, HugeTests)]
+       )
+)
+arg_to_tests['all'] = unittest.TestSuite(arg_to_tests.values())
 
 if __name__ == '__main__':
-    to_run = small_tests
+    to_run = arg_to_tests['small']
 
     if len(sys.argv) > 1:
-        if sys.argv[1] == 'all':
-            to_run = all_tests
-            print 'Running all tests:'
-        elif sys.argv[1] == 'big':
-            to_run = big_tests
-            print 'Running big tests:'
-        else:
-            print 'bad argument; not running tests'
+        to_run = arg_to_tests.get(sys.argv[1])
+        if not to_run:
+            print 'invalid argument. Possible tests are: ', arg_to_tests.keys()
             exit(-1)
-    else:
-        print 'Running small tests:'
 
     unittest.TextTestRunner().run(to_run)
