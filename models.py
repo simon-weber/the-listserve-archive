@@ -30,11 +30,8 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
         fn = file_date_str + '-' + urllib.quote_plus(title.encode('utf-8'))
         fn += '.html'
 
-        #Remove unsubscribe text.
-        post_text = self.body[:self.body.rfind('--')]
-
         #Find paragraphs. This includes extra whitespace, atm.
-        post_text = post_text.replace('\r', '')
+        post_text = self.body.replace('\r', '')
         paras = post_text.split(u'\n\n')
         paras = [para.replace('\n', '<br />') for para in paras if para]
 
@@ -57,8 +54,8 @@ description: "{desc}"
 <p class="meta">{date}</p>
 
 {post_text}""".format(
-        title=title.replace('"', r'\"'),
-        desc=desc.replace('"', r'\"'),
+        title=title.replace('"', r'\"').encode('utf-8'),
+        desc=desc.replace('"', r'\"').encode('utf-8'),
         date=date_str,
         post_text=post_text
         )
@@ -78,6 +75,8 @@ description: "{desc}"
         author = m_from['name'] if 'name' in m_from else 'Anonymous'
 
         body = message['body'][0]['content']  # TL sends one plaintext body.
+        #Remove unsubscribe text.
+        body = body[:body.rfind('--')]
 
         date = message['date']
 

@@ -11,7 +11,6 @@ from test_data import cio_email, cio_webhook_post
 
 
 class TlaTest(unittest.TestCase):
-
     def setUp(self):
         tla.app.config['TESTING'] = True
         tla.load_env_conf()
@@ -24,12 +23,14 @@ class TlaTest(unittest.TestCase):
 class SmallTests(TlaTest):
     """Offline, fast test with no external dependencies."""
 
+    #TODO stub github and move to small tests
+
     def test_post_from_cio(self):
         post = Post.from_cio_message(cio_email)
 
         self.assertEqual('subject', post.subject)
         self.assertEqual('author', post.author)
-        self.assertEqual('p1a\np1b\n\np2a\n\n--\n\nunsubscribe'.split(),
+        self.assertEqual('p1a\np1b\n\np2a\n\n'.split(),
                          post.body.split())
         self.assertEqual(0, post.date)
 

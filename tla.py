@@ -106,27 +106,26 @@ def commit_post_data(webhook_request_json, branch='gh-pages'):
         repo='the-listserve-archive',
         filepath="data/{tstamp}.json".format(tstamp=post.date),
         content=json.dumps(post),
-        commit_message='add post html',
+        commit_message='add post json',
         branch=branch)
 
     #TODO might need to make this constant, not linear on posts.
     all_posts = json.loads(
         Github().get_file(
             user=app.config['GH_USER'],
-            passwd=app.config['GH_SECRET'],
             repo='the-listserve-archive',
             filepath='data/all_posts.json',
-            commit_message='add post json',
             branch=branch))
 
-    all_posts[post.date] = post
+    #Need string keys.
+    all_posts[str(post.date)] = post
 
     Github().commit(
         user=app.config['GH_USER'],
         passwd=app.config['GH_SECRET'],
         repo='the-listserve-archive',
         filepath='data/all_posts.json',
-        content=json.dumps(all_posts),
+        content=json.dumps(all_posts, sort_keys=True, indent=4),
         commit_message='add post to cumulative collection',
         branch=branch)
 
