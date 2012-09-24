@@ -54,7 +54,7 @@ class SmallTests(TlaTest):
         post = Post.from_cio_message(cio_email)
 
         #TODO unsure how to properly verify this
-        fn, content = post.to_jekyll_post()
+        post.to_jekyll_html()
 
 
 class BigTests(TlaTest):
@@ -66,7 +66,8 @@ class BigTests(TlaTest):
             filepath='README',
             branch='testing')
 
-        self.assertTrue('Orphan branch used for GitHub api testing.', content)
+        self.assertTrue('Orphan branch used for GitHub api testing.',
+                        content.split('\n')[0])
 
 
 class HugeTests(TlaTest):
@@ -76,22 +77,26 @@ class HugeTests(TlaTest):
     def test_commit_new_file(self):
         new_file = "file-%s" % time.time()
 
-        Github().commit(user=tla.app.config['GH_USER'],
-                  passwd=tla.app.config['GH_SECRET'],
-                  repo='the-listserve-archive',
-                  filepath=new_file,
-                  content='new file contents',
-                  commit_message='new commit',
-                  branch='testing')
+        Github().commit(
+            user=tla.app.config['GH_USER'],
+            passwd=tla.app.config['GH_SECRET'],
+            repo='the-listserve-archive',
+            filepath=new_file,
+            content='new file contents',
+            commit_message='new commit',
+            branch='testing')
 
     def test_commit_update_file(self):
-        Github().commit(user=tla.app.config['GH_USER'],
-                  passwd=tla.app.config['GH_SECRET'],
-                  repo='the-listserve-archive',
-                  filepath='README',
-                  content='Orphan branch used for GitHub api testing.',
-                  commit_message='update commit',
-                  branch='testing')
+        now = time.time()
+
+        Github().commit(
+            user=tla.app.config['GH_USER'],
+            passwd=tla.app.config['GH_SECRET'],
+            repo='the-listserve-archive',
+            filepath='README',
+            content="Orphan branch used for GitHub api testing.\n%s" % now,
+            commit_message='update commit',
+            branch='testing')
 
     def test_commit_post_data(self):
         tla.commit_post_data(cio_webhook_post, branch='testing')

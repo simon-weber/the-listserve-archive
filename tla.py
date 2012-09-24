@@ -90,12 +90,12 @@ def commit_post_data(webhook_request_json, branch='gh-pages'):
 
     post = Post.from_cio_message(msg.json)
 
-    html_fn, jekyll_html = post.to_jekyll_post()
+    jekyll_html = post.to_jekyll_html()
     Github().commit(
         user=app.config['GH_USER'],
         passwd=app.config['GH_SECRET'],
         repo='the-listserve-archive',
-        filepath='_posts/' + html_fn,
+        filepath="_posts/%s.html" % post.datestr(),
         content=jekyll_html,
         commit_message='add post html',
         branch=branch)
@@ -104,9 +104,7 @@ def commit_post_data(webhook_request_json, branch='gh-pages'):
         user=app.config['GH_USER'],
         passwd=app.config['GH_SECRET'],
         repo='the-listserve-archive',
-        filepath="data/{tstamp}.json".format(
-            tstamp='-'.join(str(i) for i in post.date)
-        ),
+        filepath="data/%s.json" % post.datestr(),
         content=json.dumps(post),
         commit_message='add post json',
         branch=branch)
@@ -119,8 +117,7 @@ def commit_post_data(webhook_request_json, branch='gh-pages'):
             filepath='data/all_posts.json',
             branch=branch))
 
-    #Need string keys.
-    all_posts['-'.join(str(i) for i in post.date)] = post
+    all_posts[post.datestr()] = post
 
     Github().commit(
         user=app.config['GH_USER'],
