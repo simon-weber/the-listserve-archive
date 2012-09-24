@@ -104,7 +104,9 @@ def commit_post_data(webhook_request_json, branch='gh-pages'):
         user=app.config['GH_USER'],
         passwd=app.config['GH_SECRET'],
         repo='the-listserve-archive',
-        filepath="data/{tstamp}.json".format(tstamp=post.date),
+        filepath="data/{tstamp}.json".format(
+            tstamp='-'.join(str(i) for i in post.date)
+        ),
         content=json.dumps(post),
         commit_message='add post json',
         branch=branch)
@@ -118,7 +120,7 @@ def commit_post_data(webhook_request_json, branch='gh-pages'):
             branch=branch))
 
     #Need string keys.
-    all_posts[str(post.date)] = post
+    all_posts['-'.join(str(i) for i in post.date)] = post
 
     Github().commit(
         user=app.config['GH_USER'],

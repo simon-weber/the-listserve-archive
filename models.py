@@ -1,5 +1,5 @@
 from collections import namedtuple
-from datetime import datetime
+import datetime
 import urllib
 
 
@@ -7,15 +7,27 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
     """Represents a single Listserve email post.
 
     subject, author, and body are unicode strings.
-    date is an integer unix timestamp.
+    date is a 3-tuple of ints: (year, month, day).
 
     Posts are json-serializable.
     """
+    def __new__(cls, subject, author, body, date):
+        #If date is a list, make it a tuple.
+        #This makes Post == json.loads(json.dumps(Post)).
+        if isinstance(date, list):
+            date = tuple(date)
+
+        return super(cls, Post).__new__(
+            cls,
+            subject,
+            author,
+            body,
+            date)
 
     def to_jekyll_post(self):
         """Return a Jekyll post as a tuple (filename, contents)."""
 
-        date = datetime.fromtimestamp(self.date)
+        date = datetime.date(*self.date)
 
         #Cut out Listserve subject header.
         title = self.subject.replace('[The Listserve]', '').strip()
@@ -78,6 +90,7 @@ description: "{desc}"
         #Remove unsubscribe text.
         body = body[:body.rfind('--')]
 
-        date = message['date']
+        date = datetime.date.fromtimestamp(message['date'])
+        date = (date.year, date.month, date.day)
 
         return Post(subject, author, body, date)

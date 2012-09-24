@@ -1,4 +1,5 @@
 from copy import copy
+import datetime
 import json
 import unittest
 import time
@@ -32,7 +33,8 @@ class SmallTests(TlaTest):
         self.assertEqual('author', post.author)
         self.assertEqual('p1a\np1b\n\np2a\n\n'.split(),
                          post.body.split())
-        self.assertEqual(0, post.date)
+        self.assertEqual(datetime.date.fromtimestamp(0),
+                         datetime.date(*post.date))
 
     def test_post_json_serialize(self):
         post = Post.from_cio_message(cio_email)
