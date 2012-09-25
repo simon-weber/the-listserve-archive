@@ -47,7 +47,10 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
 
     def datestr(self):
         """Return the date of this Post as 'YYYY-MM-DD'."""
-        return '-'.join(str(i) for i in self.date)
+        strs = [str(i) for i in self.date]
+
+        #Prepend 0s where needed, assuming year is length 4.
+        return '-'.join('0' * (2 - len(s)) + s for s in strs)
 
     def to_jekyll_html(self):
         """Return this post as the contents of a Jekyll html file."""
