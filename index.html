@@ -1,1 +1,28 @@
-initial commit
+---
+layout: default
+title: The Listserve Archive
+---
+
+<div class="landing-item">
+    An archive of posts sent to <a href="http://www.thelistserve.com">The Listserve</a>.
+    <a href="/about.html">More information</a>.
+</div>
+
+<div class="landing-item">
+    <ul>
+        {% for post in site.posts %}
+
+        {% unless post.next %}
+        <h3>{{ post.date | date: '%B %Y' }}</h3>
+        {% else %}
+        {% capture month %}{{ post.date | date: '%B' }}{% endcapture %}
+        {% capture nmonth %}{{ post.next.date | date: '%B' }}{% endcapture %}
+        {% if month != nmonth %}
+        <h3>{{ post.date | date: '%B %Y' }}</h3>
+        {% endif %}
+        {% endunless %}
+
+        <li>{{ post.date | date:"%d" }} <a href="{{ post.url }}">{{ post.title }}</a></li>
+        {% endfor %}
+    </ul>
+</div>

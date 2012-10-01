@@ -1,0 +1,111 @@
+/*
+Sitewide default layout:
+*/
+
+/* don't flick when overflowing viewport */
+html {
+    overflow: -moz-scrollbars-vertical; 
+    overflow-y: scroll;
+}
+
+body {
+}
+
+div.container {
+    padding-top: 60px; }
+
+nav {
+    position: fixed;
+    /*width: 170px;*/ }
+#logo {
+    margin-bottom: 20px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    letter-spacing: -1px;
+    font-weight: bold;
+}
+#logo a {
+    text-decoration: none;
+}
+nav ul {
+    float: left;  }
+nav ul li {
+    display: block;
+    margin-bottom: 10px; }
+nav ul li a,
+nav ul li a:visited,
+nav ul li a:active  {
+    font-size: 14px;
+    color: #555;
+    text-decoration: none;
+    font-weight: bold; }
+nav ul li a:hover,
+nav ul li a:focus {
+    color: #222; }
+
+.favicon img{
+    width:16px; height:16px;
+}
+
+
+.sidebar{
+    text-align:center;
+}
+
+.five-spaced span{
+    width:18%;
+    display: inline-block;
+    margin:0;padding:0;
+}
+
+/*
+landing page:
+*/
+
+.landing{/*width:900px;*/}
+.landing h1{font-size:24px;text-align:left;}
+.landing-item{/*position:relative;width:700px; */margin:0 auto 0 auto;margin-bottom:30px;}
+.landing-item h2{text-transform:uppercase;font-weight:bold;text-align:left;}
+.header-year{margin:20px 0 20px 0;}
+.landing-item ul,.landing-item p{margin-top:10px;}
+.landing-item ul li{text-align:left;margin-bottom:5px;}
+
+/*
+Posts:
+*/
+
+.meta{
+    font-family: Rockwell
+}
+
+
+div.figure {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 2em;
+  margin-bottom: 2em;
+  width: 60%;
+  border: thin silver solid;
+  padding: 0.5em;
+}
+div.figure p {
+  text-align: center;
+  font-style: italic;
+  font-size: smaller;
+  text-indent: 0;
+}
+div.figure img {
+  width: 100%
+}
+
+#subscribe {
+  margin-left: auto;
+  margin-right: auto;    
+}
+#subscribe p{
+  text-align: center;
+}
+
+/* .disqus h3{ */
+/*     /\* h3 -> h4 for "showing # comments" *\/ */
+/*     font-size: 21px; line-height: 30px; margin-bottom: 4px; */
+/* } */
