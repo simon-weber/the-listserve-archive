@@ -90,12 +90,13 @@ def commit_post_data(webhook_request_json, branch='gh-pages'):
 
     post = Post.from_cio_message(msg.json)
 
-    jekyll_html = post.to_jekyll_html()
+    #TODO probably better to make just one commit
+    fname, jekyll_html = post.to_jekyll_html()
     Github().commit(
         user=app.config['GH_USER'],
         passwd=app.config['GH_SECRET'],
         repo='the-listserve-archive',
-        filepath="_posts/%s.html" % post.datestr(),
+        filepath="_posts/%s" % fname,
         content=jekyll_html,
         commit_message='add post html',
         branch=branch)

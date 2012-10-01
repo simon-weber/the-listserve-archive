@@ -59,7 +59,10 @@ class SmallTests(TlaTest):
         post = Post.from_cio_message(cio_email)
 
         #TODO unsure how to properly verify this
-        post.to_jekyll_html()
+        fname, contents = post.to_jekyll_html()
+
+        #Make sure we have enough '-'s.
+        self.assertTrue(fname.count('-') >= 3)
 
 
 class BigTests(TlaTest):

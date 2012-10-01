@@ -53,15 +53,21 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
         return '-'.join('0' * (2 - len(s)) + s for s in strs)
 
     def to_jekyll_html(self):
-        """Return this post as the contents of a Jekyll html file."""
+        """Return a Jekyll post as (filename, contents)."""
 
-        #Build a datestr, eg 'August 02 2012'.
+        #Build a readable datestr, eg 'August 02 2012'.
         date = datetime.date(*self.date)
         full_month_datestr = date.strftime("%B %d %Y")
 
         #Cut out Listserve subject header.
         title = self.subject.replace('[The Listserve]', '').strip()
+        if not title:
+            title = '[no subject]'
         desc = 'A post from The Listserve'  # TODO do something interesting
+
+        #Jekyll needs the filename as YYYY-MM-DD-title.markup
+        #title can be empty, but we still need the '-'
+        fname = self.datestr() + "-%s.html" % title
 
         #Find paragraphs.
         post_text = self.body.replace('\r', '')
@@ -74,7 +80,7 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
             for para in paras])
 
         #Encode output and build file contents.
-        return """---
+        contents = """---
 layout: post
 title: "{title}"
 description: "{desc}"
@@ -92,3 +98,5 @@ description: "{desc}"
         date=full_month_datestr,
         post_text=post_text
         )
+
+        return (fname, contents)
