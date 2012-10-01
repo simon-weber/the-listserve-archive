@@ -1,5 +1,6 @@
 from collections import namedtuple
 import datetime
+import urllib
 
 
 class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
@@ -67,7 +68,10 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
 
         #Jekyll needs the filename as YYYY-MM-DD-title.markup
         #title can be empty, but we still need the '-'
-        fname = self.datestr() + "-%s.html" % title
+        fname = "{date}-{title}.html".format(
+            date=self.datestr(),
+            title=urllib.quote_plus(title.encode('utf-8'))
+        )
 
         #Find paragraphs.
         post_text = self.body.replace('\r', '')
