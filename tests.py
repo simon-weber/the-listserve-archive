@@ -26,6 +26,11 @@ class SmallTests(TlaTest):
 
     #TODO stub github and move to small tests
 
+    def test_post_datestr(self):
+        post = Post('subject', 'author', 'body', (1990, 1, 1))
+        for p in post.datestr().split('-'):
+            self.assertTrue(len(p) >= 2)
+
     def test_post_from_cio(self):
         post = Post.from_cio_message(cio_email)
 
@@ -54,7 +59,10 @@ class SmallTests(TlaTest):
         post = Post.from_cio_message(cio_email)
 
         #TODO unsure how to properly verify this
-        post.to_jekyll_html()
+        fname, contents = post.to_jekyll_html()
+
+        #Make sure we have enough '-'s.
+        self.assertTrue(fname.count('-') >= 3)
 
 
 class BigTests(TlaTest):

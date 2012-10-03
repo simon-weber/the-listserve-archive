@@ -1,5 +1,6 @@
 from collections import namedtuple
 import datetime
+import urllib
 
 
 class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
@@ -41,24 +42,41 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
         body = body[:body.rfind('--')]
 
         date = datetime.date.fromtimestamp(message['date'])
+        #This is a hack. Apparently, the posts aren't sent out automatically,
+        #but manually sent on a schedule aligned with EST. We can count 
+        #on not getting more than one post in a day, but the definition of 
+        #day aligns with EST. So, we just fudge the date by 5 hours here.
+        date = date - datetime.timedelta(hours = 5)
         date = (date.year, date.month, date.day)
 
         return Post(subject, author, body, date)
 
     def datestr(self):
         """Return the date of this Post as 'YYYY-MM-DD'."""
-        return '-'.join(str(i) for i in self.date)
+        strs = [str(i) for i in self.date]
+
+        #Prepend 0s where needed, assuming year is length 4.
+        return '-'.join('0' * (2 - len(s)) + s for s in strs)
 
     def to_jekyll_html(self):
-        """Return this post as the contents of a Jekyll html file."""
+        """Return a Jekyll post as (filename, contents)."""
 
-        #Build a datestr, eg 'August 02 2012'.
+        #Build a readable datestr, eg 'August 02 2012'.
         date = datetime.date(*self.date)
         full_month_datestr = date.strftime("%B %d %Y")
 
         #Cut out Listserve subject header.
         title = self.subject.replace('[The Listserve]', '').strip()
+        if not title:
+            title = '[no subject]'
         desc = 'A post from The Listserve'  # TODO do something interesting
+
+        #Jekyll needs the filename as YYYY-MM-DD-title.markup
+        #title can be empty, but we still need the '-'
+        fname = "{date}-{title}.html".format(
+            date=self.datestr(),
+            title=urllib.quote_plus(title.encode('utf-8'))
+        )
 
         #Find paragraphs.
         post_text = self.body.replace('\r', '')
@@ -71,7 +89,7 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
             for para in paras])
 
         #Encode output and build file contents.
-        return """---
+        contents = """---
 layout: post
 title: "{title}"
 description: "{desc}"
@@ -89,3 +107,5 @@ description: "{desc}"
         date=full_month_datestr,
         post_text=post_text
         )
+
+        return (fname, contents)
