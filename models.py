@@ -42,6 +42,11 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
         body = body[:body.rfind('--')]
 
         date = datetime.date.fromtimestamp(message['date'])
+        #This is a hack. Apparently, the posts aren't sent out automatically,
+        #but manually sent on a schedule aligned with EST. We can count 
+        #on not getting more than one post in a day, but the definition of 
+        #day aligns with EST. So, we just fudge the date by 5 hours here.
+        date = date - datetime.timedelta(hours = 5)
         date = (date.year, date.month, date.day)
 
         return Post(subject, author, body, date)
