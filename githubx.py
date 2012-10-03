@@ -1,7 +1,6 @@
 """Allows use of some high-level git operations at GitHub."""
 
 import base64
-import requests
 from threading import Lock
 
 from decorator import decorator
@@ -56,45 +55,29 @@ class Githubx:
         new_commit.edit(sha=new_commit.sha, force=force)
 
     @_atomic
-    def get_file(self, user, repo,
-                 filepath, branch='master'):
-        """Returns a unicode string of the file contents."""
+    def get_file(self, repo, filepath, branch='master'):
+        """Return a unicode string of the file contents.
+        Raise a github.GithubException is the file is not found."""
 
+        #Raising an exception isn't the best general api, but for my use
+        #it makes the most sense; I always expect the file to be there.
 
+        gh_repo = self._gh.get_user().get_repo(repo)
 
-        sha_latest_commit = Github._verify(requests.get(
-            self._API + "repos/{user}/{repo}/git/refs/heads/{branch}".format(
-                user=user,
-                repo=repo,
-                branch=branch)
-        )).json['object']['sha']
+        latest_commit = gh_repo.get_git_ref("heads/%s" % branch)
 
-        sha_base_tree = Github._verify(requests.get(
-            self._API + "repos/{user}/{repo}/git/commits/{sha}".format(
-                user=user,
-                repo=repo,
-                sha=sha_latest_commit)
-        )).json['tree']['sha']
+        base_tree = gh_repo.get_git_commit(latest_commit).tree
 
-        tree = Github._verify(
-            requests.get(
-                self._API +
-                "repos/{user}/{repo}/git/trees/{sha}?recursive=1".format(
-                    user=user,
-                    repo=repo,
-                    sha=sha_base_tree)
-            )).json['tree']
+        matching_blobs = [el for el in base_tree.tree
+                          if el.type == 'blob' and
+                          el.path == filepath]
 
-        blob_found = [blob for blob in tree
-                      if blob['type'] == 'blob' and
-                      blob['path'] == filepath]
+        if not matching_blobs:
+            raise github.GithubException('File not found in repo.')
 
-        if not blob_found:
-            raise GithubException('File not found in repo.')
+        blob = matching_blobs[0]
 
-        blob = Github._verify(requests.get(blob_found[0]['url'])).json
-
-        if blob['encoding'] == 'base64':
-            return base64.b64decode(blob['content'])
+        if blob.encoding == 'base64':
+            return base64.b64decode(blob.content)
         else:
-            return blob['content']
+            return blob.content
