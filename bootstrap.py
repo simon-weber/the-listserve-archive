@@ -2,6 +2,7 @@
 
 import argparse
 import datetime
+from glob import glob
 import json
 import os
 import time
@@ -79,7 +80,14 @@ def dl_after(args):
         print fn
 
     #Rebuild all_posts.json
-    all_posts = dict((p.datestr(), p) for p in posts)
+    #Read in files to include old .jsons
+    all_posts = {}
+
+    for fname in glob('data/????-??-??.json'):
+        with open(fname) as f:
+            post = Post(*json.load(f))
+
+        all_posts[post.datestr()] = post
 
     with open('data/all_posts.json', 'w') as f:
         f.write(json.dumps(all_posts, sort_keys=True, indent=4))
