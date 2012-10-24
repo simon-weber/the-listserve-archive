@@ -3,8 +3,9 @@
 import argparse
 import datetime
 import json
-import time
 import os
+import time
+import subprocess
 
 from rauth.hook import OAuth1Hook
 import requests
@@ -20,6 +21,18 @@ oauth_hook = OAuth1Hook(
         consumer_secret=os.environ['CIO_SECRET']
 )
 cio_requests = requests.session(hooks={'pre_request': oauth_hook})
+
+
+def git_checkout_branch(name):
+    """Checkout a git branch. The working tree must be clean.
+
+    Raise an exception on failure."""
+
+    if subprocess.call(["git", "diff", "--quiet", "HEAD"]) != 0:
+        raise Exception("Dirty working tree; not checking out %s" % name)
+
+    if subprocess.call(["git", "checkout", name]) != 0:
+        raise Exception("Could not checkout %s" % name)
 
 
 def dl_after(args):
@@ -51,6 +64,7 @@ def dl_after(args):
     posts = [Post.from_cio_message(m) for m in msgs]
 
     #Write out
+    git_checkout_branch('gh-pages')
     if not os.path.exists('data'):
         #ignore race condition
         os.makedirs('data')
@@ -75,6 +89,9 @@ def dl_after(args):
 
 def rebuild_posts(args):
     """Write out ./_posts using ./data/all_posts.json."""
+
+    git_checkout_branch('gh-pages')
+
     with open('data/all_posts.json') as f:
         all_posts = json.load(f)
 
