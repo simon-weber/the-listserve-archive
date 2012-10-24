@@ -20,7 +20,15 @@ class Github:
         """Given a requests response, raise a _GithubException_ on an error."""
 
         if not res.ok:
-            raise GithubException(str(res) + ':' + str(res.json))
+            req = res.request
+            debug_fields = (res, res.text, res.encoding, res.headers,
+                            res.json, res.reason,
+                            "===req===",
+                            req.full_url, req.headers, req.method,
+                            req.params)
+            debug_msg = '\n'.join([repr(i) for i in debug_fields])
+
+            raise GithubException(debug_msg)
 
         return res
 

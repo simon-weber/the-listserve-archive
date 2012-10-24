@@ -120,6 +120,8 @@ def commit_post_data(webhook_request_json, branch='gh-pages'):
 
     all_posts[post.datestr()] = post
 
+    app.logger.debug("all_posts: " + repr(all_posts))
+
     Github().commit(
         user=app.config['GH_USER'],
         passwd=app.config['GH_SECRET'],
