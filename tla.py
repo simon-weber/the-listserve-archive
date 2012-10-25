@@ -114,6 +114,7 @@ def commit_post_data(webhook_request_json, branch='gh-pages'):
     all_posts = json.loads(
         Github().get_file(
             user=app.config['GH_USER'],
+            passwd=app.config['GH_SECRET'],
             repo='the-listserve-archive',
             filepath='data/all_posts.json',
             branch=branch))
