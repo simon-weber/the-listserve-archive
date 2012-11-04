@@ -110,27 +110,28 @@ def commit_post_data(webhook_request_json, branch='gh-pages'):
         commit_message='add post json',
         branch=branch)
 
-    #TODO might need to make this constant, not linear on posts.
-    all_posts = json.loads(
-        Github().get_file(
-            user=app.config['GH_USER'],
-            passwd=app.config['GH_SECRET'],
-            repo='the-listserve-archive',
-            filepath='data/all_posts.json',
-            branch=branch))
+    #Github api is continually erroring here; comment out while they fix.
+    ##TODO might need to make this constant, not linear on posts.
+    #all_posts = json.loads(
+    #    Github().get_file(
+    #        user=app.config['GH_USER'],
+    #        passwd=app.config['GH_SECRET'],
+    #        repo='the-listserve-archive',
+    #        filepath='data/all_posts.json',
+    #        branch=branch))
 
-    all_posts[post.datestr()] = post
+    #all_posts[post.datestr()] = post
 
-    app.logger.debug("all_posts: " + repr(all_posts))
+    #app.logger.debug("all_posts: " + repr(all_posts))
 
-    Github().commit(
-        user=app.config['GH_USER'],
-        passwd=app.config['GH_SECRET'],
-        repo='the-listserve-archive',
-        filepath='data/all_posts.json',
-        content=json.dumps(all_posts, sort_keys=True, indent=4),
-        commit_message='add post to cumulative collection',
-        branch=branch)
+    #Github().commit(
+    #    user=app.config['GH_USER'],
+    #    passwd=app.config['GH_SECRET'],
+    #    repo='the-listserve-archive',
+    #    filepath='data/all_posts.json',
+    #    content=json.dumps(all_posts, sort_keys=True, indent=4),
+    #    commit_message='add post to cumulative collection',
+    #    branch=branch)
 
 
 if __name__ == '__main__':
