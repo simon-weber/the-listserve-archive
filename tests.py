@@ -70,6 +70,7 @@ class BigTests(TlaTest):
     def test_get_gh_readme(self):
         content = Github().get_file(
             user=tla.app.config['GH_USER'],
+            passwd=tla.app.config['GH_SECRET'],
             repo='the-listserve-archive',
             filepath='README',
             branch='testing')

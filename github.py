@@ -20,7 +20,15 @@ class Github:
         """Given a requests response, raise a _GithubException_ on an error."""
 
         if not res.ok:
-            raise GithubException(str(res) + ':' + str(res.json))
+            req = res.request
+            debug_fields = (res, res.text, res.encoding, res.headers,
+                            res.json, res.reason,
+                            "===req===",
+                            req.full_url, req.headers, req.method,
+                            req.params)
+            debug_msg = '\n'.join([repr(i) for i in debug_fields])
+
+            raise GithubException(debug_msg)
 
         return res
 
@@ -53,7 +61,8 @@ class Github:
             self._API + "repos/{user}/{repo}/git/refs/heads/{branch}".format(
                 branch=branch,
                 user=user,
-                repo=repo)
+                repo=repo),
+            auth=(user, passwd),
         )).json['object']['sha']
 
         sha_base_tree = Github._verify(requests.get(
@@ -109,7 +118,7 @@ class Github:
         )
 
     @_atomic
-    def get_file(self, user, repo,
+    def get_file(self, user, passwd, repo,
                  filepath, branch='master'):
         """Returns a unicode string of the file contents."""
 
@@ -117,14 +126,16 @@ class Github:
             self._API + "repos/{user}/{repo}/git/refs/heads/{branch}".format(
                 user=user,
                 repo=repo,
-                branch=branch)
+                branch=branch),
+            auth=(user, passwd),
         )).json['object']['sha']
 
         sha_base_tree = Github._verify(requests.get(
             self._API + "repos/{user}/{repo}/git/commits/{sha}".format(
                 user=user,
                 repo=repo,
-                sha=sha_latest_commit)
+                sha=sha_latest_commit),
+            auth=(user, passwd),
         )).json['tree']['sha']
 
         tree = Github._verify(
@@ -133,7 +144,8 @@ class Github:
                 "repos/{user}/{repo}/git/trees/{sha}?recursive=1".format(
                     user=user,
                     repo=repo,
-                    sha=sha_base_tree)
+                    sha=sha_base_tree),
+            auth=(user, passwd),
             )).json['tree']
 
         blob_found = [blob for blob in tree
