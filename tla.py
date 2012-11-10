@@ -3,11 +3,12 @@ import hashlib
 import json
 import os
 
-from github import Github
 from flask import Flask, request
-from models import Post
 from rauth.hook import OAuth1Hook
 import requests
+
+from githubx import Githubx
+from models import Post
 
 
 ENV_KEYS = ('GH_USER', 'GH_SECRET', 'CIO_KEY', 'CIO_SECRET')
@@ -30,6 +31,9 @@ oauth_hook = OAuth1Hook(
     consumer_key=app.config['CIO_KEY'],
     consumer_secret=app.config['CIO_SECRET'])
 cio_requests = requests.session(hooks={'pre_request': oauth_hook})
+
+#Set up Github session.
+githubx = Githubx(app.config['GH_USER'], app.config['GH_SECRET'])
 
 
 @app.route('/cio/webhook', methods=['POST'])
@@ -92,18 +96,14 @@ def commit_post_data(webhook_request_json, branch='gh-pages'):
 
     #TODO probably better to make just one commit
     fname, jekyll_html = post.to_jekyll_html()
-    Github().commit(
-        user=app.config['GH_USER'],
-        passwd=app.config['GH_SECRET'],
+    githubx.commit(
         repo='the-listserve-archive',
         filepath="_posts/%s" % fname,
         content=jekyll_html,
         commit_message='add post html',
         branch=branch)
 
-    Github().commit(
-        user=app.config['GH_USER'],
-        passwd=app.config['GH_SECRET'],
+    githubx.commit(
         repo='the-listserve-archive',
         filepath="data/%s.json" % post.datestr(),
         content=json.dumps(post),
@@ -113,20 +113,14 @@ def commit_post_data(webhook_request_json, branch='gh-pages'):
     #Github api is continually erroring here; comment out while they fix.
     ##TODO might need to make this constant, not linear on posts.
     #all_posts = json.loads(
-    #    Github().get_file(
-    #        user=app.config['GH_USER'],
-    #        passwd=app.config['GH_SECRET'],
+    #    githubx.get_file(
     #        repo='the-listserve-archive',
     #        filepath='data/all_posts.json',
     #        branch=branch))
 
     #all_posts[post.datestr()] = post
 
-    #app.logger.debug("all_posts: " + repr(all_posts))
-
-    #Github().commit(
-    #    user=app.config['GH_USER'],
-    #    passwd=app.config['GH_SECRET'],
+    #githubx.commit(
     #    repo='the-listserve-archive',
     #    filepath='data/all_posts.json',
     #    content=json.dumps(all_posts, sort_keys=True, indent=4),

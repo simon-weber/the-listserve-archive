@@ -6,8 +6,8 @@ import time
 import sys
 
 import tla
+from githubx import Githubx
 from models import Post
-from github import Github
 from test_data import cio_email, cio_webhook_post
 
 
@@ -16,6 +16,8 @@ class TlaTest(unittest.TestCase):
         tla.app.config['TESTING'] = True
         tla.load_env_conf()
         self.app = tla.app.test_client()
+        self.githubx = Githubx(tla.app.config['GH_USER'],
+                               tla.app.config['GH_SECRET'])
 
     def tearDown(self):
         pass
@@ -68,9 +70,7 @@ class SmallTests(TlaTest):
 class BigTests(TlaTest):
     """Possibly online, slow test. Will not mutate external resources."""
     def test_get_gh_readme(self):
-        content = Github().get_file(
-            user=tla.app.config['GH_USER'],
-            passwd=tla.app.config['GH_SECRET'],
+        content = self.githubx.get_file(
             repo='the-listserve-archive',
             filepath='README',
             branch='testing')
@@ -86,9 +86,7 @@ class HugeTests(TlaTest):
     def test_commit_new_file(self):
         new_file = "file-%s" % time.time()
 
-        Github().commit(
-            user=tla.app.config['GH_USER'],
-            passwd=tla.app.config['GH_SECRET'],
+        self.githubx.commit(
             repo='the-listserve-archive',
             filepath=new_file,
             content='new file contents',
@@ -98,9 +96,7 @@ class HugeTests(TlaTest):
     def test_commit_update_file(self):
         now = time.time()
 
-        Github().commit(
-            user=tla.app.config['GH_USER'],
-            passwd=tla.app.config['GH_SECRET'],
+        self.githubx.commit(
             repo='the-listserve-archive',
             filepath='README',
             content="Orphan branch used for GitHub api testing.\n%s" % now,

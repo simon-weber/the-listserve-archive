@@ -34,9 +34,10 @@ class Githubx:
 
         gh_repo = self._gh.get_user().get_repo(repo)
 
-        latest_commit = gh_repo.get_git_ref("heads/%s" % branch)
+        head_ref = gh_repo.get_git_ref("heads/%s" % branch)
+        latest_commit = gh_repo.get_git_commit(head_ref.object.sha)
 
-        base_tree = gh_repo.get_git_commit(latest_commit).tree
+        base_tree = latest_commit.tree
 
         new_tree = gh_repo.create_git_tree(
             [github.InputGitTreeElement(
@@ -52,7 +53,7 @@ class Githubx:
             parents=[latest_commit],
             tree=new_tree)
 
-        new_commit.edit(sha=new_commit.sha, force=force)
+        head_ref.edit(sha=new_commit.sha, force=force)
 
     @_atomic
     def get_file(self, repo, filepath, branch='master'):
@@ -66,7 +67,7 @@ class Githubx:
 
         latest_commit = gh_repo.get_git_ref("heads/%s" % branch)
 
-        base_tree = gh_repo.get_git_commit(latest_commit).tree
+        base_tree = gh_repo.get_git_commit(latest_commit.object.sha).tree
 
         matching_blobs = [el for el in base_tree.tree
                           if el.type == 'blob' and
@@ -75,7 +76,7 @@ class Githubx:
         if not matching_blobs:
             raise github.GithubException('File not found in repo.')
 
-        blob = matching_blobs[0]
+        blob = gh_repo.get_git_blob(matching_blobs[0].sha)
 
         if blob.encoding == 'base64':
             return base64.b64decode(blob.content)
