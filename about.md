@@ -7,7 +7,7 @@ This site is an automatic archive of the daily posts from [The Listserve](http:/
 
 This site is hosted on [Simon Weber](http://www.simonmweber.com)'s [GitHub](https://github.com/simon-weber/the-listserve-archive). A simple backend receives emails, then formats and commits them to the repo. The repo is automatically served with GitHub Pages. Contributions are welcome.
 
-If you're interested in a machine-friendly format of the data, see the [data directory](https://github.com/simon-weber/the-listserve-archive/tree/gh-pages/data). You can also get it through http, eg TheListserveArchive.com/data/all_posts.json.
+If you're interested in a machine-friendly format of the data, see the [data directory](https://github.com/simon-weber/the-listserve-archive/tree/gh-pages/data). You can also get it through http, eg [http://thelistservearchive.com/data/2013-01-01.json](http://thelistservearchive.com/data/2013-01-01.json).
 
 All posts are licensed under the [Creative Commons 3](http://creativecommons.org/licenses/by/3.0/).
 
