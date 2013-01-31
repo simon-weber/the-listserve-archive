@@ -46,12 +46,16 @@ def dl_after(args):
 
     #Download
     msgs = []
+
     req = cio_requests.get(
         'https://api.context.io/2.0/accounts/' + aid + '/messages',
         params={'folder': 'thelistserve',
                 'include_body': 1,
                 'body_type': 'text/plain',
-                'date_after': tstamp}
+                'date_after': tstamp,
+                'sort_order': 'asc',
+                }
+
     )
 
     if req.json:
