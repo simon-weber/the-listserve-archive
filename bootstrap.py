@@ -18,8 +18,8 @@ key, secret = os.environ['CIO_KEY'], os.environ['CIO_SECRET']
 aid = os.environ['CIO_AID']
 
 oauth_hook = OAuth1Hook(
-        consumer_key=os.environ['CIO_KEY'],
-        consumer_secret=os.environ['CIO_SECRET']
+    consumer_key=os.environ['CIO_KEY'],
+    consumer_secret=os.environ['CIO_SECRET']
 )
 cio_requests = requests.session(hooks={'pre_request': oauth_hook})
 
@@ -38,7 +38,7 @@ def git_checkout_branch(name):
 
 def dl_after(args):
     """Download posts received after args.date, write them out to individual
-    json in ./data, then rebuild ./data/all_posts.json."""
+    json in ./data."""
 
     date = datetime.datetime(*[int(i) for i in args.date.split('-')])
     date -= datetime.timedelta(hours=5)
@@ -51,8 +51,7 @@ def dl_after(args):
         params={'folder': 'thelistserve',
                 'include_body': 1,
                 'body_type': 'text/plain',
-                'date_after': tstamp
-               }
+                'date_after': tstamp}
     )
 
     if req.json:
@@ -81,29 +80,29 @@ def dl_after(args):
 
     #Rebuild all_posts.json
     #Read in files to include old .jsons
-    all_posts = {}
+    #all_posts = {}
 
-    for fname in glob('data/????-??-??.json'):
-        with open(fname) as f:
-            post = Post(*json.load(f))
+    #for fname in glob('data/????-??-??.json'):
+    #    with open(fname) as f:
+    #        post = Post(*json.load(f))
 
-        all_posts[post.datestr()] = post
+    #    all_posts[post.datestr()] = post
 
-    with open('data/all_posts.json', 'w') as f:
-        f.write(json.dumps(all_posts, sort_keys=True, indent=4))
+    #with open('data/all_posts.json', 'w') as f:
+    #    f.write(json.dumps(all_posts, sort_keys=True, indent=4))
 
-    print 'data/all_posts.json'
+    #print 'data/all_posts.json'
 
 
 def rebuild_posts(args):
-    """Write out ./_posts using ./data/all_posts.json."""
+    """Write out ./_posts using ./data/*.json"""
 
     git_checkout_branch('gh-pages')
 
-    with open('data/all_posts.json') as f:
-        all_posts = json.load(f)
-
-    posts = [Post(*p) for p in all_posts.values()]
+    posts = []
+    for fname in glob('data/*.json'):
+        with open(fname) as f:
+            posts.append(Post(*json.load(f)))
 
     if not os.path.exists('_posts'):
         #ignore race condition
