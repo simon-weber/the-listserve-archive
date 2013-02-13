@@ -7,3 +7,4 @@ wsgiref==0.1.2
 rauth==0.4.15
 decorator==3.3.3
 PyGithub==1.8.1
+pytz==2012j

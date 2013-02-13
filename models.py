@@ -2,6 +2,8 @@ from collections import namedtuple
 import datetime
 import urllib
 
+import pytz
+
 
 class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
     """Represents a single Listserve email post.
@@ -41,12 +43,15 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
         #Remove unsubscribe text.
         body = body[:body.rfind('--')]
 
-        date = datetime.date.fromtimestamp(message['date'])
+        date = datetime.datetime.fromtimestamp(message['date'])
         #This is a hack. Apparently, the posts aren't sent out automatically,
         #but manually sent on a schedule aligned with EST. We can count
         #on not getting more than one post in a day, but the definition of
-        #day aligns with EST. So, we just fudge the date by 5 hours here.
-        date = date - datetime.timedelta(hours=5)
+        #day aligns with EST. Convert to EST and allow for a few hours of
+        #leeway past midnight.
+        eastern = pytz.timezone("US/Eastern")
+        date = eastern.localize(date)
+        date = date - datetime.timedelta(hours=4)
         date = (date.year, date.month, date.day)
 
         return Post(subject, author, body, date)
@@ -86,7 +91,7 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
         #Build html paragraphs.
         post_text = '\n'.join(
             ["<p>%s</p>" % para.encode('ascii', 'xmlcharrefreplace')
-            for para in paras])
+             for para in paras])
 
         #Encode output and build file contents.
         contents = """---
@@ -101,11 +106,10 @@ description: "{desc}"
 
 <p class="meta">{date}</p>
 
-{post_text}""".format(
-        title=title.replace('"', r'\"').encode('utf-8'),
-        desc=desc.replace('"', r'\"').encode('utf-8'),
-        date=full_month_datestr,
-        post_text=post_text
-        )
+{post_text}""".format(title=title.replace('"', r'\"').encode('utf-8'),
+                      desc=desc.replace('"', r'\"').encode('utf-8'),
+                      date=full_month_datestr,
+                      post_text=post_text
+                      )
 
         return (fname, contents)
