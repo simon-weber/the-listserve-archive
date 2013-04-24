@@ -33,7 +33,10 @@ oauth_hook = OAuth1Hook(
 cio_requests = requests.session(hooks={'pre_request': oauth_hook})
 
 #Set up Github session.
-githubx = Githubx(app.config['GH_USER'], app.config['GH_SECRET'])
+githubx = Githubx(
+    app.config['GH_USER'],
+    app.config['GH_SECRET'],
+    user_agent='github.com/simon-weber/the-listserve-archive')
 
 
 @app.route('/cio/webhook', methods=['POST'])

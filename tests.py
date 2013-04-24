@@ -16,8 +16,10 @@ class TlaTest(unittest.TestCase):
         tla.app.config['TESTING'] = True
         tla.load_env_conf()
         self.app = tla.app.test_client()
-        self.githubx = Githubx(tla.app.config['GH_USER'],
-                               tla.app.config['GH_SECRET'])
+        self.githubx = Githubx(
+            tla.app.config['GH_USER'],
+            tla.app.config['GH_SECRET'],
+            user_agent='github.com/simon-weber/the-listserve-archive')
 
     def tearDown(self):
         pass
