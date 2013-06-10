@@ -4,7 +4,8 @@ title: The Listserve Archive
 ---
 
 Hi, I'm [Simon](http://www.simonmweber.com).
-I didn't want any posts sent to [The Listserve](http://www.thelistserve.com) to be lost, so I built this site: it's an unofficial, automatic archive.
+I didn't want any posts sent to [The Listserve](http://www.thelistserve.com) to be lost, so I built this site:
+it's an unofficial, automatic archive.
 
 If you find it to be useful, I'd really appreciate it if you [tipped me a buck on Gittip](https://www.gittip.com/simon-weber/).
 
