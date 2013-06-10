@@ -2,9 +2,24 @@
 layout: default
 ---
 <div id="post">
-  {{ content }}
+    {{ content }}
 </div>
 
 <div id="post-footer">
-  <hr>
+    <hr>
+    <div id="page-navigation"> 
+        <div class="five columns alpha"> 
+            {% if page.previous.url %} 
+            <a id="page-left" href="{{page.previous.url}}" title="Previous post: 
+                {{page.previous.title}}">&laquo; {{page.previous.title}}</a> 
+            {% endif %} 
+        </div> 
+
+        <div class="six columns omega"> 
+            {% if page.next.url %} 
+            <a id="page-right" href="{{page.next.url}}" title="Next post: 
+                {{page.next.title}}">{{page.next.title}} &raquo; </a> 
+            {% endif %} 
+        </div> 
+    </div> 
 </div>

@@ -97,6 +97,11 @@ div.figure img {
   width: 100%
 }
 
+#page-right{
+    float:right;
+    text-align: right;
+}
+
 #subscribe {
   margin-left: auto;
   margin-right: auto;    
