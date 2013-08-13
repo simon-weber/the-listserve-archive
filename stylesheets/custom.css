@@ -73,8 +73,14 @@ landing page:
 Posts:
 */
 
+#post-title{
+    text-align: center;
+}
+
 .meta{
-    font-family: Rockwell
+    /* why didn't I make a post-date id? */
+    font-family: Rockwell, "Courier New", Courier, Georgia, Times, "Times New Roman", serif;
+    text-align: center;
 }
 
 
@@ -95,6 +101,14 @@ div.figure p {
 }
 div.figure img {
   width: 100%
+}
+
+#page-navigation{
+    overflow:auto;
+}
+
+#page-left{
+    float:left;
 }
 
 #page-right{
