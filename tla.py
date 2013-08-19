@@ -95,6 +95,11 @@ def commit_post_data(webhook_request_json, branch='gh-pages'):
                 'body_type': 'text/plain'}
     )
 
+    # context.io responded with a list?
+    app.logger.debug('message response:')
+    app.logger.debug(msg.args)
+    app.logger.debug(msg.json)
+
     post = Post.from_cio_message(msg.json)
 
     #TODO probably better to make just one commit
