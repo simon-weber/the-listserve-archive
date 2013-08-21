@@ -1,4 +1,5 @@
 from collections import namedtuple
+import cgi
 import datetime
 import urllib
 
@@ -91,16 +92,20 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
         #Find paragraphs.
         post_text = self.body.replace('\r', '')
         paras = post_text.split(u'\n\n')
-        paras = [para.replace('\n', '<br />') for para in paras if para]
 
         #Build html paragraphs.
-        post_text = '\n'.join(
-            ["<p>%s</p>" % para.encode('ascii', 'xmlcharrefreplace')
-             for para in paras])
+        paras = ["<p>%s</p>" % cgi.escape(para).encode('ascii', 'xmlcharrefreplace')
+                 for para in paras if para]
+        paras = [para.replace('\n', '<br />') for para in paras]
+        post_text = '\n'.join(paras)
+
+        property_escape = lambda s: cgi.escape(s, True).encode('ascii', 'xmlcharrefreplace')
+        page_title = property_escape(page_title)
+        desc = property_escape(desc)
 
         #Encode output and build file contents.
-        #TODO this is clearly vulnerable to code injection
-        contents = """---
+        contents = """\
+---
 layout: post
 title: "{page_title}"
 description: "{desc}"
@@ -112,8 +117,8 @@ description: "{desc}"
 
 <p class="meta">{date}</p>
 
-{post_text}""".format(page_title=page_title.replace('"', r'\"').encode('utf-8'),
-                      desc=desc.replace('"', r'\"').encode('utf-8'),
+{post_text}""".format(page_title=page_title,
+                      desc=desc,
                       date=full_month_datestr,
                       post_text=post_text
                       )
