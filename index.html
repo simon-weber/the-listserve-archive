@@ -13,16 +13,24 @@ title: The Listserve Archive
         {% for post in site.posts %}
 
         {% unless post.next %}
+        <li>
+        <br/>
         <h3>{{ post.date | date: '%B %Y' }}</h3>
+        </li>
         {% else %}
         {% capture month %}{{ post.date | date: '%B' }}{% endcapture %}
         {% capture nmonth %}{{ post.next.date | date: '%B' }}{% endcapture %}
         {% if month != nmonth %}
+        <li>
+        <br/>
         <h3>{{ post.date | date: '%B %Y' }}</h3>
+        </li>
         {% endif %}
         {% endunless %}
 
-        <li>{{ post.date | date:"%d" }} <a href="{{ post.url }}">{{ post.title }}</a></li>
+        <li>
+        {{ post.date | date:"%d" }} <a href="{{ post.url }}">{{ post.title }}</a>
+        </li>
         {% endfor %}
     </ul>
 </div>
