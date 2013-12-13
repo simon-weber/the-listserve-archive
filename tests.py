@@ -6,7 +6,7 @@ import time
 import sys
 
 import tla
-from githubx import Githubx
+from githubx import Githubx, file_description
 from models import Post
 from test_data import cio_email, cio_webhook_post
 
@@ -90,8 +90,9 @@ class HugeTests(TlaTest):
 
         self.githubx.commit(
             repo='the-listserve-archive',
-            filepath=new_file,
-            content='new file contents',
+            file_descriptions=[
+                file_description(path=new_file,
+                                 contents='new file contents')],
             commit_message='new commit',
             branch='testing')
 
@@ -100,8 +101,9 @@ class HugeTests(TlaTest):
 
         self.githubx.commit(
             repo='the-listserve-archive',
-            filepath='README',
-            content="Orphan branch used for GitHub api testing.\n%s" % now,
+            file_descriptions=[
+                file_description(path='README',
+                                 contents="Orphan branch used for GitHub api testing.\n%s" % now)],
             commit_message='update commit',
             branch='testing')
 

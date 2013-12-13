@@ -1,10 +1,17 @@
 """Allows use of some high-level git operations at GitHub."""
 
 import base64
+from collections import namedtuple
 from threading import Lock
 
 from decorator import decorator
 import github
+
+FileDescription = namedtuple('FileDescription', 'path contents executable')
+
+
+def file_description(path, contents, executable=False):
+    return FileDescription(path, contents, executable)
 
 
 class Githubx:
@@ -22,13 +29,14 @@ class Githubx:
             return f(self, *args, **kwargs)
 
     @_atomic
-    def commit(self, repo, filepath, content,
+    def commit(self, repo,
+               file_descriptions,
                commit_message,
                branch='master',
-               executable=False, force=False):
+               force=False):
         """Make a commit on GitHub.
 
-        If _filepath_ exists, it will be replaced; if not, it will be created.
+        If a path exists, it will be replaced; if not, it will be created.
 
         See http://developer.github.com/v3/git/"""
 
@@ -39,14 +47,14 @@ class Githubx:
 
         base_tree = latest_commit.tree
 
-        new_tree = gh_repo.create_git_tree(
-            [github.InputGitTreeElement(
-                path=filepath,
-                mode='100755' if executable else '100644',
-                type='blob',
-                content=content
-            )],
-            base_tree)
+        tree_els = [github.InputGitTreeElement(
+            path=desc.path,
+            mode='100755' if desc.executable else '100644',
+            type='blob',
+            content=desc.contents
+        ) for desc in file_descriptions]
+
+        new_tree = gh_repo.create_git_tree(tree_els, base_tree)
 
         new_commit = gh_repo.create_git_commit(
             message=commit_message,

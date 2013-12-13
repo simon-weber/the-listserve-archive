@@ -7,7 +7,7 @@ from flask import Flask, request
 from rauth.hook import OAuth1Hook
 import requests
 
-from githubx import Githubx
+from githubx import Githubx, file_description
 from models import Post
 
 
@@ -101,39 +101,22 @@ def commit_post_data(webhook_request_json, branch='gh-pages'):
 
     post = Post.from_cio_message(msg.json)
 
-    #TODO probably better to make just one commit
-    fname, jekyll_html = post.to_jekyll_html()
-    githubx.commit(
-        repo='the-listserve-archive',
-        filepath="_posts/%s" % fname,
-        content=jekyll_html,
-        commit_message='add post html',
-        branch=branch)
+    post_fname, jekyll_html = post.to_jekyll_html()
+    post_desc = file_description(
+        path="_posts/%s" % post_fname,
+        contents=jekyll_html,
+    )
+
+    json_desc = file_description(
+        path="data/%s.json" % post.datestr(),
+        contents=json.dumps(post),
+    )
 
     githubx.commit(
         repo='the-listserve-archive',
-        filepath="data/%s.json" % post.datestr(),
-        content=json.dumps(post),
-        commit_message='add post json',
+        file_descriptions=[post_desc, json_desc],
+        commit_message="add post (%s)" % post.datestr(),
         branch=branch)
-
-    #Github api is continually erroring here; comment out while they fix.
-    ##TODO might need to make this constant, not linear on posts.
-    #all_posts = json.loads(
-    #    githubx.get_file(
-    #        repo='the-listserve-archive',
-    #        filepath='data/all_posts.json',
-    #        branch=branch))
-
-    #all_posts[post.datestr()] = post
-
-    #githubx.commit(
-    #    repo='the-listserve-archive',
-    #    filepath='data/all_posts.json',
-    #    content=json.dumps(all_posts, sort_keys=True, indent=4),
-    #    commit_message='add post to cumulative collection',
-    #    branch=branch)
-
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
