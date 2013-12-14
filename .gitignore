@@ -1,3 +1,6 @@
+_site
+dev_env
+
 *.py[co]
 
 # Packages
