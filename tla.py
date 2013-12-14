@@ -1,6 +1,5 @@
 import hmac
 import hashlib
-import json
 import os
 
 from flask import Flask, request
@@ -95,28 +94,38 @@ def commit_post_data(webhook_request_json, branch='gh-pages'):
                 'body_type': 'text/plain'}
     )
 
-    # context.io responded with a list?
+    # context.io responded with a list once?
     app.logger.debug('message response:')
     app.logger.debug(msg.json)
 
     post = Post.from_cio_message(msg.json)
 
-    post_fname, jekyll_html = post.to_jekyll_html()
-    post_desc = file_description(
-        path="_posts/%s" % post_fname,
-        contents=jekyll_html,
-    )
-
-    json_desc = file_description(
-        path="data/%s.json" % post.datestr(),
-        contents=json.dumps(post),
-    )
+    path_content_pairs = files_to_create(post)
 
     githubx.commit(
         repo='the-listserve-archive',
-        file_descriptions=[post_desc, json_desc],
+        file_descriptions=[file_description(*pair) for pair in path_content_pairs],
         commit_message="add post (%s)" % post.datestr(),
         branch=branch)
+
+
+def files_to_create(post):
+    """Return a list of (filepath, contents) pairs.
+
+    The first item in the list will be for _posts."""
+
+    post_fname, jekyll_html = post.to_jekyll_html()
+
+    json_fname_components = post.datestr().split('-')
+    json_fname_components[-1] += '.json'
+    jekyll_json = post.to_jekyll_json()
+
+    return [
+        (os.path.join('_posts', post_fname),
+         jekyll_html),
+        (os.path.join(*json_fname_components),
+         jekyll_json),
+    ]
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

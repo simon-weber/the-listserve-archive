@@ -2,6 +2,7 @@
 
 import argparse
 import datetime
+import errno
 from glob import glob
 import json
 import os
@@ -10,8 +11,10 @@ import subprocess
 
 from rauth.hook import OAuth1Hook
 import requests
+import yaml
 
 from models import Post
+import tla
 
 
 key, secret = os.environ['CIO_KEY'], os.environ['CIO_SECRET']
@@ -22,6 +25,20 @@ oauth_hook = OAuth1Hook(
     consumer_secret=os.environ['CIO_SECRET']
 )
 cio_requests = requests.session(hooks={'pre_request': oauth_hook})
+
+
+def mkdir_p(path):
+    """equivalent to mkdir -p.
+
+    from: http://stackoverflow.com/a/600612/1231454"""
+
+    try:
+        os.makedirs(path)
+    except OSError as exc:
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
 
 
 def git_checkout_branch(name):
@@ -37,8 +54,7 @@ def git_checkout_branch(name):
 
 
 def dl_after(args):
-    """Download posts received after args.date, write them out to individual
-    json in ./data."""
+    """Download posts received after args.date and write them to _posts."""
 
     date = datetime.datetime(*[int(i) for i in args.date.split('-')])
     date -= datetime.timedelta(hours=5)
@@ -62,64 +78,53 @@ def dl_after(args):
         msgs += req.json
     else:
         print "error:", req
-        print "will not continue"
+        print "terminating without writing out"
         return
 
     posts = [Post.from_cio_message(m) for m in msgs]
 
     #Write out
     git_checkout_branch('gh-pages')
-    if not os.path.exists('data'):
-        #ignore race condition
-        os.makedirs('data')
+
+    mkdir_p('_posts')
 
     for p in posts:
-        fn = 'data/%s.json' % p.datestr()
-        contents = json.dumps(p)
-
-        with open(fn, 'w') as f:
+        # just write out the post
+        path, contents = tla.files_to_create(p)[0]
+        with open(path, 'w') as f:
             f.write(contents)
 
-        print fn
-
-    #Rebuild all_posts.json
-    #Read in files to include old .jsons
-    #all_posts = {}
-
-    #for fname in glob('data/????-??-??.json'):
-    #    with open(fname) as f:
-    #        post = Post(*json.load(f))
-
-    #    all_posts[post.datestr()] = post
-
-    #with open('data/all_posts.json', 'w') as f:
-    #    f.write(json.dumps(all_posts, sort_keys=True, indent=4))
-
-    #print 'data/all_posts.json'
+        print path
 
 
-def rebuild_posts(args):
-    """Write out ./_posts using ./data/*.json"""
+def rebuild_from_yaml(args):
+    """Write out all files using yaml representations in ``_posts/*.html``."""
 
     git_checkout_branch('gh-pages')
 
     posts = []
-    for fname in glob('data/*.json'):
+    for fname in glob('_posts/*.html'):
         with open(fname) as f:
-            posts.append(Post(*json.load(f)))
+            c = f.read()
+            # we only want the yaml frontmatter
+            start = c.index('---') + 3
+            end = c.rindex('---')
+            frontmatter = c[start:end]
 
-    if not os.path.exists('_posts'):
-        #ignore race condition
-        os.makedirs('_posts')
+            posts.append(Post(**yaml.safe_load(frontmatter)))
 
     for p in posts:
-        fn, jekyll_html = p.to_jekyll_html()
-        fn = '_posts/' + fn
+        for path, contents in tla.files_to_create(p):
+            if path.startswith('_posts'):
+                # don't overwrite posts
+                continue
 
-        with open(fn, 'w') as f:
-            f.write(jekyll_html)
+            mkdir_p(os.path.dirname(path))
 
-        print fn
+            with open(path, 'w') as f:
+                f.write(contents)
+
+            print path
 
 
 def main():
@@ -132,9 +137,9 @@ def main():
     get_parser.add_argument('date', help='date in YYYY-MM-DD form')
     get_parser.set_defaults(func=dl_after)
 
-    rebuild_parser = commands.add_parser('rebuild_posts',
-                                         help='Rebuild ./_posts from ./data')
-    rebuild_parser.set_defaults(func=rebuild_posts)
+    rebuild_parser = commands.add_parser('rebuild_from_yaml',
+                                         help='Rebuild all files from from _posts/*.html.')
+    rebuild_parser.set_defaults(func=rebuild_from_yaml)
 
     args = parser.parse_args()
     args.func(args)

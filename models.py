@@ -94,7 +94,7 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
         return post_text
 
     def to_jekyll_json(self):
-        """Return a Jekyll stand-alone file as (filename, contents).
+        """Return the body of a Jekyll stand-alone file.
 
         It will render to a json representation of this post."""
 
