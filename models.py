@@ -1,9 +1,15 @@
+import cgi
 from collections import namedtuple
 import datetime
 
 import pytz
 from slugify import slugify
 import yaml
+
+
+def property_escape(s, encode_quote=False):
+    """Return an ascii string with xml charrefs."""
+    return cgi.escape(s, encode_quote).encode('ascii', 'xmlcharrefreplace')
 
 
 class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
@@ -64,12 +70,26 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
         #Prepend 0s where needed, assuming year is length 4.
         return '-'.join('0' * (2 - len(s)) + s for s in strs)
 
+    def body_as_html(self):
+        """Return the body of this post as an html fragment."""
+
+        #Find paragraphs.
+        post_text = self.body.replace('\r', '')
+        paras = post_text.split(u'\n\n')
+
+        #Build html paragraphs.
+        paras = ["<p>%s</p>" % property_escape(para)
+                 for para in paras if para]
+        paras = [para.replace('\n', '<br />') for para in paras]
+        post_text = '\n'.join(paras)
+
+        return post_text
+
     def to_jekyll_html(self):
         """Return a Jekyll post as (filename, contents)."""
 
-        #Build a readable datestr, eg 'August 02 2012'.
         date = datetime.date(*self.date)
-        # full_month_datestr = date.strftime("%B %d %Y")  # previously used in post text
+        full_month_datestr = date.strftime("%B %d %Y")  # eg 'August 02 2012'
         datestr_with_comma = date.strftime("%B %d, %Y")
 
         #The post subject becomes the page title and description.
@@ -93,11 +113,16 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
             'layout': 'post',
             'tags': [self.datestr()],  # a hack to build {datestr => [posts]} globally
             'title': page_title,
-            'description': desc,
             'post_data': dict(self._asdict()),  # yaml can't encode an OrderedDict
+            'post_html': {
+                'body': self.body_as_html(),
+                #TODO do we really need to encode quotes here?
+                'title': property_escape(page_title, True),
+                'desc': property_escape(desc, True),
+                'date': full_month_datestr,
+            }
         }
 
-        #Encode output and build file contents.
         contents = """\
 ---
 {frontmatter}
