@@ -2,7 +2,13 @@
 layout: default
 ---
 <div id="post">
-    {{ content }}
+    <h2 id='post-title'>
+        {{ page.post_html.title }}
+    </h2>
+
+    <p class="meta">{{page.post_html.date}}</p>
+
+    {{page.post_html.body}}
 </div>
 
 <div id="page-navigation"> 
