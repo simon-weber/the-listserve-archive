@@ -1,0 +1,4 @@
+---
+layout: nil
+---
+{{ site.tags[page.datekey] | map: 'api_data' | jsonify }}
