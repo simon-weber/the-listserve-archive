@@ -12,6 +12,15 @@ def property_escape(s, encode_quote=False):
     return cgi.escape(s, encode_quote).encode('ascii', 'xmlcharrefreplace')
 
 
+def jekyll_file_contents(frontmatter=None, contents=None):
+    if frontmatter is None:
+        frontmatter = 'layout: nil'
+    if contents is None:
+        contents = ''
+
+    return '\n'.join(['---', frontmatter, '---', contents])
+
+
 class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
     """Represents a single Listserve email post.
 
@@ -52,10 +61,9 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
 
         date = datetime.datetime.fromtimestamp(message['date'])
         #This is a hack. Apparently, the posts aren't sent out automatically,
-        #but manually sent on a schedule aligned with EST. We can count
-        #on not getting more than one post in a day, but the definition of
-        #day aligns with EST. Convert to EST and allow for a few hours of
-        #leeway past midnight.
+        # but manually sent on a schedule aligned with EST.
+        #Convert to EST and allow for a few hours of
+        # leeway past midnight.
         eastern = pytz.timezone("US/Eastern")
         date = eastern.localize(date)
         date = date - datetime.timedelta(hours=4)
@@ -85,6 +93,14 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
 
         return post_text
 
+    def to_jekyll_json(self):
+        """Return a Jekyll stand-alone file as (filename, contents).
+
+        It will render to a json representation of this post."""
+
+        contents = "{{ site.tags.%s | map: 'api_data' | jsonify }}" % self.date_str()
+        return jekyll_file_contents(contents=contents)
+
     def to_jekyll_html(self):
         """Return a Jekyll post as (filename, contents)."""
 
@@ -113,20 +129,18 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
             'layout': 'post',
             'tags': [self.datestr()],  # a hack to build {datestr => [posts]} globally
             'title': page_title,
-            'post_data': dict(self._asdict()),  # yaml can't encode an OrderedDict
-            'post_html': {
-                'body': self.body_as_html(),
-                #TODO do we really need to encode quotes here?
-                'title': property_escape(page_title, True),
-                'desc': property_escape(desc, True),
-                'date': full_month_datestr,
+            'api_data': {
+                'post': dict(self._asdict()),  # yaml can't encode an OrderedDict
+                'post_html': {
+                    'body': self.body_as_html(),
+                    #TODO do we really need to encode quotes here?
+                    'title': property_escape(page_title, True),
+                    'desc': property_escape(desc, True),
+                    'date': full_month_datestr,
+                }
             }
         }
 
-        contents = """\
----
-{frontmatter}
----
-""".format(frontmatter=yaml.safe_dump(frontmatter))
+        contents = jekyll_file_contents(frontmatter=yaml.safe_dump(frontmatter))
 
         return (fname, contents.encode('utf-8'))
