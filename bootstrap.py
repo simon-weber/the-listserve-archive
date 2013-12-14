@@ -1,6 +1,7 @@
 """A little utility for manually patching in posts."""
 
 import argparse
+import codecs
 import datetime
 import errno
 from glob import glob
@@ -14,7 +15,6 @@ import yaml
 
 from models import Post
 import tla
-
 
 key, secret = os.environ['CIO_KEY'], os.environ['CIO_SECRET']
 aid = os.environ['CIO_AID']
@@ -90,7 +90,8 @@ def dl_after(args):
     for p in posts:
         # just write out the post
         path, contents = tla.files_to_create(p)[0]
-        with open(path, 'w') as f:
+
+        with codecs.open(path, 'w', 'utf-8') as f:
             f.write(contents)
 
         print path
@@ -103,7 +104,7 @@ def rebuild_from_yaml(args):
 
     posts = []
     for fname in glob('_posts/*.html'):
-        with open(fname) as f:
+        with codecs.open(fname, 'r', 'utf-8') as f:
             c = f.read()
             # we only want the yaml frontmatter
             start = c.index('---') + 3
@@ -120,7 +121,7 @@ def rebuild_from_yaml(args):
 
             mkdir_p(os.path.dirname(path))
 
-            with open(path, 'w') as f:
+            with codecs.open(path, 'w', 'utf-8') as f:
                 f.write(contents)
 
             print path

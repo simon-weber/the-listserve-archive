@@ -141,6 +141,7 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
             }
         }
 
+        # yaml dumps a bytestring
         contents = jekyll_file_contents(frontmatter=yaml.safe_dump(frontmatter))
 
-        return (fname, contents.encode('utf-8'))
+        return (fname, contents)
