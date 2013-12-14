@@ -1,9 +1,9 @@
 from collections import namedtuple
 import cgi
 import datetime
-import urllib
 
 import pytz
+from slugify import slugify
 
 
 class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
@@ -86,7 +86,7 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
         #title can be empty, but we still need the '-'
         fname = "{date}-{page_title}.html".format(
             date=self.datestr(),
-            page_title=urllib.quote_plus(page_title.encode('utf-8'))
+            page_title=slugify(page_title).encode('utf-8')
         )
 
         #Find paragraphs.
