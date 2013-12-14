@@ -4,7 +4,6 @@ import argparse
 import datetime
 import errno
 from glob import glob
-import json
 import os
 import time
 import subprocess
@@ -109,9 +108,9 @@ def rebuild_from_yaml(args):
             # we only want the yaml frontmatter
             start = c.index('---') + 3
             end = c.rindex('---')
-            frontmatter = c[start:end]
+            frontmatter = yaml.safe_load(c[start:end])
 
-            posts.append(Post(**yaml.safe_load(frontmatter)))
+            posts.append(Post(**frontmatter['api_data']['post']))
 
     for p in posts:
         for path, contents in tla.files_to_create(p):
