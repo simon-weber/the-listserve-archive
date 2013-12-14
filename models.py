@@ -116,6 +116,21 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
 
         return jekyll_file_contents(frontmatter=frontmatter)
 
+    def to_jekyll_multipost(self):
+        """Return the body of a Jekyll stand-alone html file.
+
+        If there were multiple posts on this day, it will list them.
+        Otherwise it will just render the post.
+        """
+
+        frontmatter = {
+            'layout': 'postmulti',
+            'datekey': self.datestr(),
+            'canonical_datekey': self.datestr(),
+        }
+
+        return jekyll_file_contents(frontmatter=frontmatter)
+
     def to_jekyll_html(self):
         """Return a Jekyll post as (filename, contents)."""
 

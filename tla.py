@@ -116,15 +116,21 @@ def files_to_create(post):
 
     post_fname, jekyll_html = post.to_jekyll_html()
 
-    json_fname_components = post.datestr().split('-')
-    json_fname_components[-1] += '.json'
+    date_path = os.path.join(*post.datestr().split('-'))
+
+    json_fname = date_path + '.json'
     jekyll_json = post.to_jekyll_json()
+
+    multipost_fname = date_path + '.html'
+    jekyll_multipost = post.to_jekyll_multipost()
 
     return [
         (os.path.join('_posts', post_fname),
          jekyll_html),
-        (os.path.join(*json_fname_components),
+        (json_fname,
          jekyll_json),
+        (multipost_fname,
+         jekyll_multipost),
     ]
 
 if __name__ == '__main__':
