@@ -1,0 +1,4 @@
+---
+layout: nil
+---
+{{ site.tags.2012-08-06 | map: 'api_data' | jsonify }}
