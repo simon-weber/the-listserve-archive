@@ -3,20 +3,17 @@ layout: default
 title: The Listserve Archive
 ---
 
-Hi, I'm [Simon](http://www.simonmweber.com).
-I didn't want any posts sent to [The Listserve](http://www.thelistserve.com) to be lost, so I built this site:
-it's an unofficial, automatic archive.
+This site is an unofficial, automatic archive of an email lottery called [The Listserve](http://www.thelistserve.com).
 
-If you find it to be useful, I'd really appreciate it if you [tipped me a buck on Gittip](https://www.gittip.com/simon-weber/).
+Behind the scenes, the site is basically just a [GitHub repo](https://github.com/simon-weber/the-listserve-archive).
+The backend formats and commits posts to the repo, which gets served with GitHub Pages.
 
-The site is basically just a [GitHub repo](https://github.com/simon-weber/the-listserve-archive).
-The backend formats and commits posts to the repo, which is automatically served with GitHub Pages.
-Contributions are appreciated!
-
-If you're interested in machine-friendly data, see the [data directory](https://github.com/simon-weber/the-listserve-archive/tree/gh-pages/data).
-You can get this by cloning the repo, or through http (eg [http://thelistservearchive.com/data/2013-01-01.json](http://thelistservearchive.com/data/2013-01-01.json)).
+The site also provides a basic api.
+Just hit /YYYY/MM/DD.json, and you'll get a json list of all posts from that day.
+Each post includes the raw information from the email, as well as the html-formatted version I serve.
+For an example, see [http://thelistservearchive.com/2013/01/01.json](http://thelistservearchive.com/2013/01/01.json).
+If you want every post, it'll be easier to just shallow-clone the repo.
 
 All posts are licensed under the [Creative Commons 3](http://creativecommons.org/licenses/by/3.0/).
 
-
-ps, [this post](/2013/02/16.html) is about a different Simon =)
+Built by [Simon Weber](http://www.simonmweber.com) (who is *not* the same as [this Simon](/2013/02/16.html)).
