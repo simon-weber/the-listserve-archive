@@ -127,7 +127,6 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
 ---
 {frontmatter}
 ---
-TODO
 """.format(frontmatter=yaml.safe_dump(frontmatter))
 
         return (fname, contents.encode('utf-8'))
