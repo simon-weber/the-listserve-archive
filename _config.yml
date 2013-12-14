@@ -1,2 +1,3 @@
 description: An archive for The Listserve.
 permalink: /:year/:month/:day.html
+exclude: [venv-tla]
