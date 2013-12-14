@@ -1,4 +1,5 @@
 ---
-layout: nil
+datekey: '2013-11-13'
+layout: postjson
+
 ---
-{{ site.tags.2013-11-13 | map: 'api_data' | jsonify }}
