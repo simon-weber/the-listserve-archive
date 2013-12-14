@@ -13,12 +13,18 @@ def property_escape(s, encode_quote=False):
 
 
 def jekyll_file_contents(frontmatter=None, contents=None):
+    """Return a bytestring of jekyll file contents.
+
+    :param fontmatter: a dict
+    :param content: a string
+    """
+
     if frontmatter is None:
-        frontmatter = 'layout: nil'
+        frontmatter = {'layout': 'nil'}
     if contents is None:
         contents = ''
 
-    return '\n'.join(['---', frontmatter, '---', contents])
+    return '\n'.join(['---', yaml.safe_dump(frontmatter), '---', contents])
 
 
 class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
@@ -98,8 +104,12 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
 
         It will render to a json representation of this post."""
 
-        contents = "{{ site.tags.%s | map: 'api_data' | jsonify }}" % self.datestr()
-        return jekyll_file_contents(contents=contents)
+        frontmatter = {
+            'layout': 'postjson',
+            'datekey': self.datestr(),
+        }
+
+        return jekyll_file_contents(frontmatter=frontmatter)
 
     def to_jekyll_html(self):
         """Return a Jekyll post as (filename, contents)."""
@@ -142,6 +152,6 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
         }
 
         # yaml dumps a bytestring
-        contents = jekyll_file_contents(frontmatter=yaml.safe_dump(frontmatter))
+        contents = jekyll_file_contents(frontmatter=frontmatter)
 
         return (fname, contents)
