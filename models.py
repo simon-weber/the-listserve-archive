@@ -1,9 +1,9 @@
 from collections import namedtuple
-import cgi
 import datetime
 
 import pytz
 from slugify import slugify
+import yaml
 
 
 class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
@@ -69,7 +69,7 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
 
         #Build a readable datestr, eg 'August 02 2012'.
         date = datetime.date(*self.date)
-        full_month_datestr = date.strftime("%B %d %Y")
+        # full_month_datestr = date.strftime("%B %d %Y")  # previously used in post text
         datestr_with_comma = date.strftime("%B %d, %Y")
 
         #The post subject becomes the page title and description.
@@ -89,38 +89,20 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
             page_title=slugify(page_title).encode('utf-8')
         )
 
-        #Find paragraphs.
-        post_text = self.body.replace('\r', '')
-        paras = post_text.split(u'\n\n')
-
-        #Build html paragraphs.
-        paras = ["<p>%s</p>" % cgi.escape(para).encode('ascii', 'xmlcharrefreplace')
-                 for para in paras if para]
-        paras = [para.replace('\n', '<br />') for para in paras]
-        post_text = '\n'.join(paras)
-
-        property_escape = lambda s: cgi.escape(s, True).encode('ascii', 'xmlcharrefreplace')
-        page_title = property_escape(page_title)
-        desc = property_escape(desc)
+        frontmatter = {
+            'layout': 'post',
+            'tags': [self.datestr()],  # a hack to build {datestr => [posts]} globally
+            'title': page_title,
+            'description': desc,
+            'post_data': dict(self._asdict()),  # yaml can't encode an OrderedDict
+        }
 
         #Encode output and build file contents.
         contents = """\
 ---
-layout: post
-title: "{page_title}"
-description: "{desc}"
+{frontmatter}
 ---
+TODO
+""".format(frontmatter=yaml.safe_dump(frontmatter))
 
-<h2 id='post-title'>
-{{{{ page.title }}}}
-</h2>
-
-<p class="meta">{date}</p>
-
-{post_text}""".format(page_title=page_title,
-                      desc=desc,
-                      date=full_month_datestr,
-                      post_text=post_text
-                      )
-
-        return (fname, contents)
+        return (fname, contents.encode('utf-8'))
