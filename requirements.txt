@@ -9,3 +9,4 @@ PyGithub==1.14.0
 pytz==2012j
 python-slugify==0.0.6
 Unidecode==0.04.14
+PyYAML==3.10
