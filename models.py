@@ -24,7 +24,12 @@ def jekyll_file_contents(frontmatter=None, contents=None):
     if contents is None:
         contents = ''
 
-    return '\n'.join(['---', yaml.safe_dump(frontmatter), '---', contents])
+    # default_flow_style=False will always dump in block format,
+    #  which looks more natural in jekyll files.
+    return '\n'.join(['---',
+                      yaml.safe_dump(frontmatter, default_flow_style=False),
+                      '---',
+                      contents])
 
 
 class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
