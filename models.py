@@ -98,7 +98,7 @@ class Post(namedtuple('Post', ['subject', 'author', 'body', 'date'])):
 
         It will render to a json representation of this post."""
 
-        contents = "{{ site.tags.%s | map: 'api_data' | jsonify }}" % self.date_str()
+        contents = "{{ site.tags.%s | map: 'api_data' | jsonify }}" % self.datestr()
         return jekyll_file_contents(contents=contents)
 
     def to_jekyll_html(self):
