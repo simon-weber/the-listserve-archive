@@ -1,3 +1,4 @@
 description: An archive for The Listserve.
 permalink: /:year/:month/:day/:title/
 exclude: [.gitignore, venv-tla]
+markdown: kramdown
