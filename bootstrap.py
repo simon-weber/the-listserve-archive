@@ -6,8 +6,10 @@ import datetime
 import errno
 from glob import glob
 import os
+import pprint
 import time
 import subprocess
+import sys
 
 from rauth.hook import OAuth1Hook
 import requests
@@ -52,6 +54,22 @@ def git_checkout_branch(name):
         raise Exception("Could not checkout %s" % name)
 
 
+def _write_out(posts, yaml=True, supporting=False):
+    for p in posts:
+        for path, contents in tla.files_to_create(p):
+            if path.startswith('_posts') and not yaml:
+                continue
+            if not path.startswith('_posts') and not supporting:
+                continue
+
+            mkdir_p(os.path.dirname(path))
+
+            with codecs.open(path, 'w', 'utf-8') as f:
+                f.write(contents)
+
+            print path
+
+
 def dl_after(args):
     """Download posts received after args.date and write them to _posts."""
 
@@ -82,19 +100,7 @@ def dl_after(args):
 
     posts = [Post.from_cio_message(m) for m in msgs]
 
-    #Write out
-    git_checkout_branch('gh-pages')
-
-    mkdir_p('_posts')
-
-    for p in posts:
-        # just write out the post
-        path, contents = tla.files_to_create(p)[0]
-
-        with codecs.open(path, 'w', 'utf-8') as f:
-            f.write(contents)
-
-        print path
+    _write_out(posts)
 
 
 def rebuild_from_yaml(args):
@@ -113,18 +119,47 @@ def rebuild_from_yaml(args):
 
             posts.append(Post(**frontmatter['api_data']['post']))
 
-    for p in posts:
-        for path, contents in tla.files_to_create(p):
-            if path.startswith('_posts'):
-                # don't overwrite posts
-                continue
+    _write_out(posts, yaml=False, supporting=True)
 
-            mkdir_p(os.path.dirname(path))
 
-            with codecs.open(path, 'w', 'utf-8') as f:
-                f.write(contents)
+def add_manually(args):
+    entering = True
+    posts = []
 
-            print path
+    while entering:
+        posts.append(get_post_from_user())
+        entering = raw_input('again? (y/n): ') == 'y'
+
+    _write_out(posts)
+
+
+def get_post_from_user():
+    ok = False
+    sentinel = '<stop>'
+    post_kwargs = {
+        'subject': None,
+        'author': None,
+        'body': None,
+        'date': None,
+    }
+
+    print "enter %r on a line by itself to end input" % sentinel
+
+    while not ok:
+        for param in post_kwargs.keys():
+            print
+            print "%s:" % param
+            entered = '\n'.join(iter(raw_input, sentinel))
+            post_kwargs[param] = entered.decode(sys.stdin.encoding)
+
+        date_list = [int(i) for i in post_kwargs['date'].split('-')]
+        post_kwargs['date'] = date_list
+
+        print
+        pprint.pprint(post_kwargs)
+        ok = raw_input('confirm (y/n) :') == 'y'
+
+    return Post(**post_kwargs)
 
 
 def main():
@@ -132,14 +167,21 @@ def main():
         description='A tool to manually patch in posts.')
     commands = parser.add_subparsers(help='commands')
 
-    get_parser = commands.add_parser('dl_after',
-                                     help='Download posts through cIO.')
+    get_parser = commands.add_parser(
+        'dl_after',
+        help='Download posts through cIO.')
     get_parser.add_argument('date', help='date in YYYY-MM-DD form')
     get_parser.set_defaults(func=dl_after)
 
-    rebuild_parser = commands.add_parser('rebuild_from_yaml',
-                                         help='Rebuild all files from from _posts/*.html.')
+    rebuild_parser = commands.add_parser(
+        'rebuild_from_yaml',
+        help='Rebuild all files from from _posts/*.html.')
     rebuild_parser.set_defaults(func=rebuild_from_yaml)
+
+    manual_add_parser = commands.add_parser(
+        'add_manually',
+        help='Create post files by manually entering post content.')
+    manual_add_parser.set_defaults(func=add_manually)
 
     args = parser.parse_args()
     args.func(args)
