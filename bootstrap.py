@@ -73,6 +73,8 @@ def _write_out(posts, yaml=True, supporting=False):
 def dl_after(args):
     """Download posts received after args.date and write them to _posts."""
 
+    git_checkout_branch('gh-pages')
+
     date = datetime.datetime(*[int(i) for i in args.date.split('-')])
     date -= datetime.timedelta(hours=5)
     tstamp = time.mktime(date.timetuple())
