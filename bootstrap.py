@@ -96,7 +96,8 @@ def dl_after(args):
     if req.json:
         msgs += req.json
     else:
-        print "error:", req
+        print "did not receive json!"
+        print "%r" % req.content
         print "terminating without writing out"
         return
 
