@@ -11,21 +11,14 @@ import time
 import subprocess
 import sys
 
-from rauth.hook import OAuth1Hook
-import requests
+from rauth import OAuth1Session
 import yaml
 
 from models import Post
 import tla
 
-key, secret = os.environ['CIO_KEY'], os.environ['CIO_SECRET']
 aid = os.environ['CIO_AID']
-
-oauth_hook = OAuth1Hook(
-    consumer_key=os.environ['CIO_KEY'],
-    consumer_secret=os.environ['CIO_SECRET']
-)
-cio_requests = requests.session(hooks={'pre_request': oauth_hook})
+cio_requests = OAuth1Session(os.environ['CIO_KEY'], os.environ['CIO_SECRET'])
 
 
 def mkdir_p(path):
@@ -93,8 +86,8 @@ def dl_after(args):
 
     )
 
-    if req.json:
-        msgs += req.json
+    if req.json():
+        msgs += req.json()
     else:
         print "did not receive json!"
         print "%r" % req.content

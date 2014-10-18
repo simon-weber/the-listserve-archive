@@ -3,8 +3,7 @@ import hashlib
 import os
 
 from flask import Flask, request
-from rauth.hook import OAuth1Hook
-import requests
+from rauth import OAuth1Session
 
 from githubx import Githubx, file_description
 from models import Post
@@ -25,13 +24,8 @@ def load_env_conf(keys=ENV_KEYS):
 load_env_conf()
 
 
-#Set up cIO session.
-oauth_hook = OAuth1Hook(
-    consumer_key=app.config['CIO_KEY'],
-    consumer_secret=app.config['CIO_SECRET'])
-cio_requests = requests.session(hooks={'pre_request': oauth_hook})
+cio_requests = OAuth1Session(os.environ['CIO_KEY'], os.environ['CIO_SECRET'])
 
-#Set up Github session.
 githubx = Githubx(
     app.config['GH_USER'],
     app.config['GH_SECRET'],
@@ -43,12 +37,12 @@ def receive_mail():
     """POSTed to by context.IO when a new post is received."""
     app.logger.debug("received new post")
     app.logger.debug(request.form)
-    app.logger.debug(request.json)
+    app.logger.debug(request.json())
 
-    if not verify_webhook_post(request.json):
+    if not verify_webhook_post(request.json()):
         return "invalid"
 
-    commit_post_data(request.json)
+    commit_post_data(request.json())
 
     return "ok"
 
@@ -58,9 +52,7 @@ def handle_webhook_failure():
     """Context.IO might get or post at this for different kinds of failure."""
     app.logger.error("context.IO reports WebHook failure!")
     app.logger.debug(request.args)
-    app.logger.debug(request.json)
-
-    #TODO need to notify; cIO only notifies on the first failure
+    app.logger.debug(request.json())
 
     return "ok"
 
@@ -96,9 +88,9 @@ def commit_post_data(webhook_request_json, branch='gh-pages'):
 
     # context.io responded with a list once?
     app.logger.debug('message response:')
-    app.logger.debug(msg.json)
+    app.logger.debug(msg.json())
 
-    post = Post.from_cio_message(msg.json)
+    post = Post.from_cio_message(msg.json())
 
     path_content_pairs = files_to_create(post)
 
