@@ -37,12 +37,12 @@ def receive_mail():
     """POSTed to by context.IO when a new post is received."""
     app.logger.debug("received new post")
     app.logger.debug(request.form)
-    app.logger.debug(request.json())
+    app.logger.debug(request.json)
 
-    if not verify_webhook_post(request.json()):
+    if not verify_webhook_post(request.json):
         return "invalid"
 
-    commit_post_data(request.json())
+    commit_post_data(request.json)
 
     return "ok"
 
@@ -52,7 +52,7 @@ def handle_webhook_failure():
     """Context.IO might get or post at this for different kinds of failure."""
     app.logger.error("context.IO reports WebHook failure!")
     app.logger.debug(request.args)
-    app.logger.debug(request.json())
+    app.logger.debug(request.json)
 
     return "ok"
 
