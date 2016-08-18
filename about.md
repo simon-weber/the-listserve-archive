@@ -1,6 +1,7 @@
 ---
 layout: default
 title: The Listserve Archive
+permalink: /about.html
 ---
 
 This site is an unofficial, automatic archive of an email lottery called [The Listserve](http://www.thelistserve.com).
