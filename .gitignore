@@ -1,5 +1,6 @@
 _site
 dev_env
+.jekyll-metadata
 
 *.py[co]
 
