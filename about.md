@@ -4,7 +4,7 @@ title: The Listserve Archive
 permalink: /about.html
 ---
 
-This site is an unofficial, automatic archive of an email lottery called [The Listserve](http://www.thelistserve.com).
+This site is an unofficial, automatic archive of a defunct email lottery called [The Listserve](http://www.thelistserve.com).
 
 Behind the scenes, the site is basically just a [GitHub repo](https://github.com/simon-weber/the-listserve-archive).
 The backend formats and commits posts to the repo, which gets served with GitHub Pages.
