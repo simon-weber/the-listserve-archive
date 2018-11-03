@@ -9,12 +9,12 @@ ndg-httpsclient==0.3.2
 pyasn1==0.1.7
 pycparser==2.10
 PyGithub==1.25.2
-pyOpenSSL==0.14
+pyOpenSSL==17.5.0
 python-slugify==0.1.0
 pytz==2014.7
 PyYAML==3.11
 rauth==0.7.0
-requests==2.11.1
+requests==2.20.0
 six==1.8.0
 Unidecode==0.4.16
 Werkzeug==0.9.6
